@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide;
+import com.squareup.picasso.Picasso;
 import com.example.b_shop.data.local.entities.Category;
 import com.example.b_shop.databinding.ItemCategoryBinding;
 
@@ -44,8 +44,8 @@ public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.Categ
         void bind(Category category) {
             binding.categoryName.setText(category.getName());
             
-            // Load category image using Glide
-            Glide.with(binding.categoryImage)
+            // Load category image using Picasso
+            Picasso.get()
                 .load(category.getImagePath())
                 .centerCrop()
                 .into(binding.categoryImage);

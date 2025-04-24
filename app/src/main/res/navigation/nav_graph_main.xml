@@ -11,6 +11,9 @@
         <action
             android:id="@+id/action_home_to_product_details"
             app:destination="@id/navigation_product_details" />
+        <action
+            android:id="@+id/action_home_to_category_products"
+            app:destination="@id/navigation_category_products" />
     </fragment>
 
     <fragment

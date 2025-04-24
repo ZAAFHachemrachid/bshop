@@ -48,27 +48,36 @@ public class HomeFragment extends Fragment {
     private void setupRecyclerViews() {
         // Setup Categories RecyclerView
         categoryAdapter = new CategoryAdapter(category -> 
-            Navigation.findNavController(requireView())
-                    .navigate(HomeFragmentDirections
-                            .actionHomeToCategoryProducts(category.getCategoryId())));
+            {
+                Bundle args = new Bundle();
+                args.putInt("categoryId", category.getCategoryId());
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_home_to_category_products, args);
+            });
         binding.categoriesRecyclerView.setAdapter(categoryAdapter);
         binding.categoriesRecyclerView.setLayoutManager(
             new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
 
         // Setup Featured Products RecyclerView
         featuredProductsAdapter = new ProductAdapter(product ->
-            Navigation.findNavController(requireView())
-                    .navigate(HomeFragmentDirections
-                            .actionHomeToProductDetails(product.getProductId())));
+            {
+                Bundle args = new Bundle();
+                args.putInt("productId", product.getProductId());
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_home_to_product_details, args);
+            });
         binding.featuredProductsRecyclerView.setAdapter(featuredProductsAdapter);
         binding.featuredProductsRecyclerView.setLayoutManager(
             new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
 
         // Setup Top Rated Products RecyclerView
         topRatedProductsAdapter = new ProductAdapter(product ->
-            Navigation.findNavController(requireView())
-                    .navigate(HomeFragmentDirections
-                            .actionHomeToProductDetails(product.getProductId())));
+            {
+                Bundle args = new Bundle();
+                args.putInt("productId", product.getProductId());
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_home_to_product_details, args);
+            });
         binding.topRatedProductsRecyclerView.setAdapter(topRatedProductsAdapter);
         binding.topRatedProductsRecyclerView.setLayoutManager(
             new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));

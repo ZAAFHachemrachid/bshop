@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide;
+import com.squareup.picasso.Picasso;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.databinding.ItemProductBinding;
 import java.text.NumberFormat;
@@ -59,8 +59,8 @@ public class ProductAdapter extends ListAdapter<Product, ProductAdapter.ProductV
             binding.stockStatus.setText(product.getStock() > 0 ? "In Stock" : "Out of Stock");
             binding.stockStatus.setEnabled(product.getStock() > 0);
 
-            // Load product image using Glide
-            Glide.with(binding.productImage)
+            // Load product image using Picasso
+            Picasso.get()
                 .load(product.getImagePath())
                 .centerCrop()
                 .into(binding.productImage);
