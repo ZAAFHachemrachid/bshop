@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_main"
+    app:startDestination="@id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.b_shop.ui.home.HomeFragment"
+        android:label="Home">
+        <action
+            android:id="@+id/action_home_to_product_details"
+            app:destination="@id/navigation_product_details" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_categories"
+        android:name="com.example.b_shop.ui.category.CategoryListFragment"
+        android:label="Categories">
+        <action
+            android:id="@+id/action_categories_to_products"
+            app:destination="@id/navigation_category_products" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_category_products"
+        android:name="com.example.b_shop.ui.category.CategoryProductsFragment"
+        android:label="Category Products">
+        <argument
+            android:name="categoryId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_category_products_to_product_details"
+            app:destination="@id/navigation_product_details" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_search"
+        android:name="com.example.b_shop.ui.search.SearchFragment"
+        android:label="Search">
+        <action
+            android:id="@+id/action_search_to_product_details"
+            app:destination="@id/navigation_product_details" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_cart"
+        android:name="com.example.b_shop.ui.cart.CartFragment"
+        android:label="Cart">
+        <action
+            android:id="@+id/action_cart_to_checkout"
+            app:destination="@id/navigation_checkout" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.b_shop.ui.profile.ProfileFragment"
+        android:label="Profile" />
+
+    <fragment
+        android:id="@+id/navigation_product_details"
+        android:name="com.example.b_shop.ui.product.ProductDetailsFragment"
+        android:label="Product Details">
+        <argument
+            android:name="productId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_product_details_to_cart"
+            app:destination="@id/navigation_cart" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_checkout"
+        android:name="com.example.b_shop.ui.cart.CheckoutFragment"
+        android:label="Checkout" />
+
+</navigation>
