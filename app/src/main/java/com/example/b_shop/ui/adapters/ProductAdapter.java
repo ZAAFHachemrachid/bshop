@@ -2,6 +2,7 @@ package com.example.b_shop.ui.adapters;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import com.example.b_shop.R;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -60,10 +61,15 @@ public class ProductAdapter extends ListAdapter<Product, ProductAdapter.ProductV
             binding.stockStatus.setEnabled(product.getStock() > 0);
 
             // Load product image using Picasso
-            Picasso.get()
-                .load(product.getImagePath())
-                .centerCrop()
-                .into(binding.productImage);
+            String imagePath = product.getImagePath();
+            if (imagePath != null && !imagePath.isEmpty()) {
+                Picasso.get()
+                    .load(imagePath)
+                    .centerCrop()
+                    .into(binding.productImage);
+            } else {
+                binding.productImage.setImageResource(R.drawable.ic_product_placeholder);
+            }
 
             // Set click listener
             binding.getRoot().setOnClickListener(v -> listener.onProductClick(product));
@@ -82,7 +88,8 @@ public class ProductAdapter extends ListAdapter<Product, ProductAdapter.ProductV
                    oldItem.getPrice() == newItem.getPrice() &&
                    oldItem.getRating() == newItem.getRating() &&
                    oldItem.getStock() == newItem.getStock() &&
-                   oldItem.getImagePath().equals(newItem.getImagePath());
+                   (oldItem.getImagePath() == null ? newItem.getImagePath() == null :
+                    oldItem.getImagePath().equals(newItem.getImagePath()));
         }
     }
 

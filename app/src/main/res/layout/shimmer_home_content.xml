@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Categories Shimmer -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp"
+        android:clipToPadding="false">
+
+        <include layout="@layout/shimmer_category_item" />
+        <include layout="@layout/shimmer_category_item" />
+        <include layout="@layout/shimmer_category_item" />
+        <include layout="@layout/shimmer_category_item" />
+
+    </LinearLayout>
+
+    <!-- Featured Products Shimmer -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp"
+        android:paddingHorizontal="4dp"
+        android:clipToPadding="false">
+
+        <include layout="@layout/shimmer_product_item" />
+        <include layout="@layout/shimmer_product_item" />
+        <include layout="@layout/shimmer_product_item" />
+
+    </LinearLayout>
+
+    <!-- Top Rated Products Shimmer -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp"
+        android:paddingHorizontal="4dp"
+        android:clipToPadding="false">
+
+        <include layout="@layout/shimmer_product_item" />
+        <include layout="@layout/shimmer_product_item" />
+        <include layout="@layout/shimmer_product_item" />
+
+    </LinearLayout>
+
+</LinearLayout>

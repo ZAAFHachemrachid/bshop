@@ -4,6 +4,7 @@ import android.app.Application;
 import androidx.lifecycle.LiveData;
 import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.dao.ReviewDao;
+import com.example.b_shop.data.local.dao.UserDao;
 import com.example.b_shop.data.local.entities.Review;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -12,12 +13,14 @@ import java.util.concurrent.Future;
 
 public class ReviewRepository {
     private final ReviewDao reviewDao;
+    private final UserDao userDao;
     private final ProductRepository productRepository;
     private final ExecutorService executorService;
 
     public ReviewRepository(Application application) {
         AppDatabase database = AppDatabase.getInstance(application);
         reviewDao = database.reviewDao();
+        userDao = database.userDao();
         productRepository = new ProductRepository(application);
         executorService = Executors.newSingleThreadExecutor();
     }
@@ -55,6 +58,11 @@ public class ReviewRepository {
 
     public LiveData<List<Review>> getReviewsForProduct(int productId) {
         return reviewDao.getReviewsForProduct(productId);
+    }
+
+    // New method: Get reviews synchronously
+    public List<Review> getProductReviews(int productId) throws Exception {
+        return reviewDao.getProductReviewsSync(productId);
     }
 
     public LiveData<List<ReviewDao.ReviewWithUser>> getReviewsWithUserForProduct(int productId) {
@@ -95,6 +103,15 @@ public class ReviewRepository {
         return comment != null && 
                comment.length() >= 10 && 
                comment.length() <= 500;
+    }
+
+    // User info methods for reviews
+    public String getUserName(int userId) throws Exception {
+        return userDao.getUserNameSync(userId);
+    }
+
+    public String getUserAvatarUrl(int userId) throws Exception {
+        return userDao.getUserAvatarUrlSync(userId);
     }
 
     // Cleanup

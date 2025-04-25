@@ -3,87 +3,79 @@ package com.example.b_shop.ui.home;
 import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.b_shop.data.local.entities.Category;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.repositories.CategoryRepository;
 import com.example.b_shop.data.repositories.ProductRepository;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HomeViewModel extends AndroidViewModel {
-    
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
-    
-    private final LiveData<List<Category>> categories;
-    private final LiveData<List<Product>> featuredProducts;
-    private final LiveData<List<Product>> topRatedProducts;
-    
-    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
-    private final MutableLiveData<String> error = new MutableLiveData<>();
+    private final ExecutorService executorService;
+    private final MutableLiveData<Boolean> isRefreshing;
 
     public HomeViewModel(Application application) {
         super(application);
-        
-        // Initialize repositories
         categoryRepository = new CategoryRepository(application);
         productRepository = new ProductRepository(application);
-        
-        // Get categories
-        categories = categoryRepository.getAllCategories();
-        
-        // Get featured products (for now, getting all available products)
-        featuredProducts = productRepository.getAvailableProducts();
-        
-        // Get top rated products (limited to 10)
-        topRatedProducts = productRepository.getTopRatedProducts(10);
-        
-        // Setup loading state
-        MediatorLiveData<Boolean> loadingMediator = new MediatorLiveData<>();
-        loadingMediator.addSource(categories, list -> checkLoading());
-        loadingMediator.addSource(featuredProducts, list -> checkLoading());
-        loadingMediator.addSource(topRatedProducts, list -> checkLoading());
-    }
-    
-    private void checkLoading() {
-        if (categories.getValue() != null && 
-            featuredProducts.getValue() != null && 
-            topRatedProducts.getValue() != null) {
-            isLoading.setValue(false);
-        }
+        executorService = Executors.newSingleThreadExecutor();
+        isRefreshing = new MutableLiveData<>(false);
+        loadInitialData();
     }
 
-    public LiveData<List<Category>> getCategories() {
-        return categories;
-    }
-
-    public LiveData<List<Product>> getFeaturedProducts() {
-        return featuredProducts;
-    }
-
-    public LiveData<List<Product>> getTopRatedProducts() {
-        return topRatedProducts;
-    }
-
-    public LiveData<Boolean> isLoading() {
-        return isLoading;
-    }
-
-    public LiveData<String> getError() {
-        return error;
+    private void loadInitialData() {
+        // Initial data load
+        executorService.execute(() -> {
+            // Load data from repositories
+            categoryRepository.refreshCategories();
+            productRepository.refreshFeaturedProducts();
+            productRepository.refreshTopRatedProducts();
+        });
     }
 
     public void refreshData() {
-        isLoading.setValue(true);
-        // In a real app, you might want to refresh the data from a remote source here
-        // For now, the LiveData will automatically update if the database changes
+        isRefreshing.setValue(true);
+        executorService.execute(() -> {
+            try {
+                // Refresh all data
+                categoryRepository.refreshCategories();
+                productRepository.refreshFeaturedProducts();
+                productRepository.refreshTopRatedProducts();
+            } finally {
+                isRefreshing.postValue(false);
+            }
+        });
+    }
+
+    // Categories
+    public LiveData<List<Category>> getCategories() {
+        return categoryRepository.getAllCategories();
+    }
+
+    // Featured Products
+    public LiveData<List<Product>> getFeaturedProducts() {
+        return productRepository.getTopRatedProducts(5); // Get top 5 products for featured
+    }
+
+    // Top Rated Products
+    public LiveData<List<Product>> getTopRatedProducts() {
+        return productRepository.getTopRatedProducts(10); // Get top 10 products
+    }
+
+    // Refresh state
+    public LiveData<Boolean> getIsRefreshing() {
+        return isRefreshing;
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
-        categoryRepository.cleanup();
+        executorService.shutdown();
         productRepository.cleanup();
+        categoryRepository.cleanup();
     }
 }

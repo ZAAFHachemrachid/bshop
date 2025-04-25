@@ -4,6 +4,7 @@ import android.app.Application;
 import androidx.lifecycle.LiveData;
 import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.dao.ProductDao;
+import com.example.b_shop.data.local.dao.UserDao;
 import com.example.b_shop.data.local.entities.Product;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -11,12 +12,26 @@ import java.util.concurrent.Executors;
 
 public class ProductRepository {
     private final ProductDao productDao;
+    private final UserDao userDao;
     private final ExecutorService executorService;
 
     public ProductRepository(Application application) {
         AppDatabase database = AppDatabase.getInstance(application);
         productDao = database.productDao();
+        userDao = database.userDao();
         executorService = Executors.newSingleThreadExecutor();
+    }
+
+    public void refreshFeaturedProducts() {
+        executorService.execute(() -> {
+            productDao.getTopRatedProducts(5);
+        });
+    }
+
+    public void refreshTopRatedProducts() {
+        executorService.execute(() -> {
+            productDao.getTopRatedProducts(10);
+        });
     }
 
     // Basic CRUD operations
@@ -45,6 +60,11 @@ public class ProductRepository {
 
     public LiveData<Product> getProductById(int productId) {
         return productDao.getProductById(productId);
+    }
+
+    // New method: Get product synchronously
+    public Product getProduct(int productId) throws Exception {
+        return productDao.getProductSync(productId);
     }
 
     public LiveData<List<Product>> getProductsByCategory(int categoryId) {
@@ -83,6 +103,43 @@ public class ProductRepository {
         executorService.execute(() -> {
             productDao.updateProductRating(productId);
         });
+    }
+
+    // New methods for favorites
+    public boolean isProductFavorite(int productId) throws Exception {
+        return userDao.isProductFavorite(productId);
+    }
+
+    public void setProductFavorite(int productId, boolean isFavorite) throws Exception {
+        if (isFavorite) {
+            userDao.addToFavorites(productId);
+        } else {
+            userDao.removeFromFavorites(productId);
+        }
+    }
+
+    // New methods for cart
+    public void addToCart(int productId, int quantity) throws Exception {
+        // Check stock first
+        Product product = getProduct(productId);
+        if (product.getStock() >= quantity) {
+            userDao.addToCart(productId, quantity);
+        } else {
+            throw new Exception("Not enough stock available");
+        }
+    }
+
+    public void removeFromCart(int productId) throws Exception {
+        userDao.removeFromCart(productId);
+    }
+
+    public void updateCartQuantity(int productId, int quantity) throws Exception {
+        Product product = getProduct(productId);
+        if (product.getStock() >= quantity) {
+            userDao.updateCartQuantity(productId, quantity);
+        } else {
+            throw new Exception("Not enough stock available");
+        }
     }
 
     // Cleanup

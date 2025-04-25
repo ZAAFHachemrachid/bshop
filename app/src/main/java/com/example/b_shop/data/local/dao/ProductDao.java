@@ -28,6 +28,10 @@ public interface ProductDao {
     @Query("SELECT * FROM products WHERE productId = :productId")
     LiveData<Product> getProductById(int productId);
 
+    // New synchronous method
+    @Query("SELECT * FROM products WHERE productId = :productId")
+    Product getProductSync(int productId);
+
     @Query("SELECT * FROM products WHERE categoryId = :categoryId")
     LiveData<List<Product>> getProductsByCategory(int categoryId);
 
@@ -52,6 +56,19 @@ public interface ProductDao {
            "SET rating = (SELECT AVG(CAST(rating AS FLOAT)) FROM reviews WHERE productId = :productId) " +
            "WHERE productId = :productId")
     void updateProductRating(int productId);
+
+    // New method to update review count
+    @Query("UPDATE products " +
+           "SET reviewCount = (SELECT COUNT(*) FROM reviews WHERE productId = :productId) " +
+           "WHERE productId = :productId")
+    void updateReviewCount(int productId);
+
+    // Transaction to update both rating and review count
+    @Transaction
+    default void updateProductReviewStats(int productId) {
+        updateProductRating(productId);
+        updateReviewCount(productId);
+    }
 
     @Transaction
     @Query("SELECT p.*, c.name as categoryName " +

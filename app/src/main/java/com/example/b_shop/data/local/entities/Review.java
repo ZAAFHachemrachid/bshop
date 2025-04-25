@@ -4,7 +4,9 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity(
     tableName = "reviews",
@@ -36,6 +38,9 @@ public class Review {
     private int rating;
     private String comment;
     private Date createdAt;
+    private String userName;
+    private String userAvatarUrl;
+    private List<String> images;
 
     public Review(int userId, int productId, int rating, String comment) {
         this.userId = userId;
@@ -43,6 +48,7 @@ public class Review {
         this.rating = rating;
         this.comment = comment;
         this.createdAt = new Date();
+        this.images = new ArrayList<>();
     }
 
     // Getters
@@ -66,8 +72,24 @@ public class Review {
         return comment;
     }
 
+    public String getContent() {
+        return comment; // Alias for getComment()
+    }
+
     public Date getCreatedAt() {
         return createdAt;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getUserAvatarUrl() {
+        return userAvatarUrl;
+    }
+
+    public List<String> getImages() {
+        return images != null ? images : new ArrayList<>();
     }
 
     // Setters
@@ -93,5 +115,24 @@ public class Review {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setUserAvatarUrl(String userAvatarUrl) {
+        this.userAvatarUrl = userAvatarUrl;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
+    public void addImage(String imagePath) {
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
+        this.images.add(imagePath);
     }
 }

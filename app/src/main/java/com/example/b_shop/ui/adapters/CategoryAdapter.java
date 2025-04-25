@@ -2,6 +2,7 @@ package com.example.b_shop.ui.adapters;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import com.example.b_shop.R;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -45,10 +46,16 @@ public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.Categ
             binding.categoryName.setText(category.getName());
             
             // Load category image using Picasso
-            Picasso.get()
-                .load(category.getImagePath())
-                .centerCrop()
-                .into(binding.categoryImage);
+            String imagePath = category.getImagePath();
+            if (imagePath != null && !imagePath.isEmpty()) {
+                Picasso.get()
+                    .load(imagePath)
+                    .centerCrop()
+                    .into(binding.categoryImage);
+            } else {
+                // Load a default placeholder image from drawable resources
+                binding.categoryImage.setImageResource(R.drawable.ic_category_placeholder);
+            }
 
             binding.getRoot().setOnClickListener(v -> listener.onCategoryClick(category));
         }
@@ -63,7 +70,8 @@ public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.Categ
         @Override
         public boolean areContentsTheSame(@NonNull Category oldItem, @NonNull Category newItem) {
             return oldItem.getName().equals(newItem.getName()) &&
-                   oldItem.getImagePath().equals(newItem.getImagePath());
+                   (oldItem.getImagePath() == null ? newItem.getImagePath() == null :
+                    oldItem.getImagePath().equals(newItem.getImagePath()));
         }
     }
 

@@ -40,11 +40,17 @@ android {
 dependencies {
     def nav_version = "2.5.3"
 
-    // Picasso for image loading
+    // UI Components
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'com.google.android.material:material:1.11.0'
+
+    // Image loading
     implementation 'com.squareup.picasso:picasso:2.8'
     
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    // implementation 'com.google.android.material:material:1.9.0' // Removed duplicate
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
     // Navigation Component

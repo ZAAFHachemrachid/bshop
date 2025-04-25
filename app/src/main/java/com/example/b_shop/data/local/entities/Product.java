@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(
     tableName = "products",
@@ -25,6 +27,8 @@ public class Product {
     private String imagePath;
     private int stock;
     private float rating;
+    private int reviewCount;
+    private List<String> images;
 
     public Product(String name, String description, float price, 
                   int categoryId, String imagePath, int stock) {
@@ -35,6 +39,11 @@ public class Product {
         this.imagePath = imagePath;
         this.stock = stock;
         this.rating = 0.0f; // Default rating
+        this.reviewCount = 0;
+        this.images = new ArrayList<>();
+        if (imagePath != null) {
+            this.images.add(imagePath);
+        }
     }
 
     // Getters
@@ -70,6 +79,18 @@ public class Product {
         return rating;
     }
 
+    public float getAverageRating() {
+        return rating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public List<String> getImages() {
+        return images != null ? images : new ArrayList<>();
+    }
+
     // Setters
     public void setProductId(int productId) {
         this.productId = productId;
@@ -101,5 +122,20 @@ public class Product {
 
     public void setRating(float rating) {
         this.rating = rating;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
+    public void addImage(String imagePath) {
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
+        this.images.add(imagePath);
     }
 }

@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Dark theme -->
-    <style name="Theme.BShop" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.BShop" parent="Theme.Material3.DayNight">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary_dark_theme</item>
-        <item name="colorPrimaryVariant">@color/primary_variant_dark_theme</item>
+        <item name="colorPrimaryContainer">@color/primary_variant_dark_theme</item>
         <item name="colorOnPrimary">@color/black</item>
         
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/secondary_dark_theme</item>
-        <item name="colorSecondaryVariant">@color/secondary_variant_dark_theme</item>
+        <item name="colorSecondaryContainer">@color/secondary_variant_dark_theme</item>
         <item name="colorOnSecondary">@color/black</item>
         
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryContainer</item>
         
-        <!-- Customize your dark theme here. -->
+        <!-- Surface colors -->
         <item name="android:windowBackground">@color/background_dark</item>
+        
+        <!-- Text colors -->
         <item name="android:textColorPrimary">@color/text_primary_dark</item>
         <item name="android:textColorSecondary">@color/text_secondary_dark</item>
+        
+        <!-- Material3 specific -->
+        <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>
     </style>
 </resources>
