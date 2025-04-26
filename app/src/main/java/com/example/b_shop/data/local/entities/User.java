@@ -18,6 +18,7 @@ public class User {
     private String phone;
     private String address;
 
+    @androidx.room.Ignore
     public User(String name, String email, String password) {
         this.name = name;
         this.email = email;
@@ -25,6 +26,7 @@ public class User {
     }
 
     // Constructor for creating user with specific ID (for testing/development)
+    @androidx.room.Ignore
     public User(int userId, String name, String email, String password) {
         this.userId = userId;
         this.name = name;

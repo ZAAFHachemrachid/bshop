@@ -38,6 +38,7 @@ android {
 }
 
 dependencies {
+    implementation libs.security.crypto
     def nav_version = "2.5.3"
 
     // UI Components

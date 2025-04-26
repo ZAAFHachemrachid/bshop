@@ -19,6 +19,8 @@
     <string name="remember_me_checkbox">Remember login credentials</string>
     <string name="login_button">Sign in to your account</string>
     <string name="loading_indicator">Processing login request</string>
+    <string name="error_login_failed">Login failed. Please check your credentials and try again.</string>
+    <string name="error_invalid_deep_link">Invalid deep link. Redirecting to login.</string>
 
     <!-- Session -->
     <string name="session_expired_title">Session Expired</string>
@@ -59,6 +61,7 @@
     <string name="checkout_success_message">Your order has been placed successfully and will be processed shortly.</string>
     <string name="view_orders">View Orders</string>
     <string name="continue_shopping">Continue Shopping</string>
+
     <!-- Profile -->
     <string name="profile">Profile</string>
     <string name="profile_image">Profile Image</string>

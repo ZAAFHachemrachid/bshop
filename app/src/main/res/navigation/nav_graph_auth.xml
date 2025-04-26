@@ -12,12 +12,26 @@
             android:id="@+id/action_login_to_register"
             app:destination="@id/registerFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim" />
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToSaveState="true" />
         <action
             android:id="@+id/action_login_to_main"
             app:destination="@id/mainActivity"
             app:popUpTo="@id/nav_graph_auth"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim" />
+        <deepLink
+            android:id="@+id/deeplink_login"
+            app:uri="bshop://auth/login" />
+        <argument
+            android:name="email"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <fragment
@@ -28,17 +42,35 @@
             android:id="@+id/action_register_to_login"
             app:destination="@id/loginFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim" />
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/registerFragment"
+            app:popUpToSaveState="true" />
         <action
             android:id="@+id/action_register_to_main"
             app:destination="@id/mainActivity"
             app:popUpTo="@id/nav_graph_auth"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim" />
+        <deepLink
+            android:id="@+id/deeplink_register"
+            app:uri="bshop://auth/register" />
+        <argument
+            android:name="referralCode"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <activity
         android:id="@+id/mainActivity"
         android:name="com.example.b_shop.ui.MainActivity"
-        android:label="MainActivity" />
+        android:label="MainActivity">
+        <deepLink
+            android:id="@+id/deeplink_main"
+            app:uri="bshop://main" />
+    </activity>
 
 </navigation>
