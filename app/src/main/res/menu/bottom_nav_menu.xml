@@ -11,9 +11,9 @@
         android:title="Categories" />
 
     <item
-        android:id="@+id/navigation_search"
-        android:icon="@drawable/ic_search"
-        android:title="Search" />
+        android:id="@+id/navigation_wishlist"
+        android:icon="@drawable/ic_favorite_border"
+        android:title="Wish List" />
 
     <item
         android:id="@+id/navigation_cart"

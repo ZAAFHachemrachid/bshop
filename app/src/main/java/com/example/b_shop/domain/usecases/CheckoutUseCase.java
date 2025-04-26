@@ -6,7 +6,9 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.b_shop.data.local.relations.CartItemWithProduct;
 import com.example.b_shop.data.local.entities.Order;
 import com.example.b_shop.data.local.entities.OrderItem;
+import com.example.b_shop.data.local.errors.CartError;
 import com.example.b_shop.data.repositories.CartRepository;
+import com.example.b_shop.data.repositories.CartRepository.CartOperationCallback;
 import com.example.b_shop.data.repositories.OrderRepository;
 import com.example.b_shop.data.repositories.ProductRepository;
 import com.example.b_shop.utils.UserManager;
@@ -85,12 +87,27 @@ public class CheckoutUseCase {
                     // 4. Update inventory
                     updateInventory(cartItems);
 
-                    // 5. Clear cart
-                    cartRepository.clearCart();
+                    // 5. Clear cart with proper error handling
+                    cartRepository.clearCart(new CartOperationCallback() {
+                        @Override
+                        public void onSuccess() {
+                            // 6. Complete checkout
+                            checkoutState.postValue(CheckoutState.COMPLETED);
+                            checkoutResult.postValue(new CheckoutResult(true, order.getOrderId(), null));
+                        }
 
-                    // 6. Complete checkout
-                    checkoutState.postValue(CheckoutState.COMPLETED);
-                    checkoutResult.postValue(new CheckoutResult(true, order.getOrderId(), null));
+                        @Override
+                        public void onError(CartError error) {
+                            // If cart clear fails, we should still consider the checkout successful
+                            // since the order is created and inventory is updated
+                            checkoutState.postValue(CheckoutState.COMPLETED);
+                            checkoutResult.postValue(new CheckoutResult(
+                                true,
+                                order.getOrderId(),
+                                "Order placed successfully but failed to clear cart: " + error.getDetails()
+                            ));
+                        }
+                    });
 
                 } catch (Exception e) {
                     handleCheckoutError(e.getMessage());

@@ -49,6 +49,11 @@ public interface ProductDao {
     @Query("SELECT * FROM products ORDER BY rating DESC LIMIT :limit")
     LiveData<List<Product>> getTopRatedProducts(int limit);
 
+    @Query("SELECT p.* FROM products p " +
+           "INNER JOIN user_favorites f ON p.productId = f.productId " +
+           "WHERE f.userId = :userId")
+    LiveData<List<Product>> getFavoriteProducts(int userId);
+
     @Query("UPDATE products SET stock = stock - :quantity WHERE productId = :productId")
     void decreaseStock(int productId, int quantity);
 

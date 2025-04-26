@@ -12,7 +12,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.example.b_shop.BShopApplication;
 import com.example.b_shop.R;
+import com.example.b_shop.data.repositories.CategoryRepository;
+import com.example.b_shop.data.repositories.ProductRepository;
 import com.example.b_shop.databinding.FragmentCategoryProductsBinding;
 import com.example.b_shop.ui.adapters.ProductAdapter;
 
@@ -41,11 +44,29 @@ public class CategoryProductsFragment extends Fragment {
         }
         int categoryId = args.getInt(ARG_CATEGORY_ID);
         
-        viewModel = new ViewModelProvider(this).get(CategoryProductsViewModel.class);
+        setupViewModel();
         viewModel.setCategoryId(categoryId);
         
         setupRecyclerView();
         observeViewModel();
+    }
+
+    private void setupViewModel() {
+        // Get application instance
+        BShopApplication application = (BShopApplication) requireActivity().getApplication();
+        
+        // Get repositories
+        ProductRepository productRepository = application.getProductRepository();
+        CategoryRepository categoryRepository = application.getCategoryRepository();
+        
+        // Create factory
+        CategoryProductsViewModel.Factory factory = new CategoryProductsViewModel.Factory(
+            productRepository,
+            categoryRepository
+        );
+        
+        // Get ViewModel instance using factory
+        viewModel = new ViewModelProvider(this, factory).get(CategoryProductsViewModel.class);
     }
 
     private void setupRecyclerView() {

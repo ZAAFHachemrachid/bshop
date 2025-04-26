@@ -27,6 +27,9 @@ public interface UserDao {
     @Query("SELECT * FROM users WHERE userId = :userId")
     LiveData<User> getUserById(int userId);
 
+    @Query("SELECT * FROM users WHERE userId = :userId")
+    User getUserByIdSync(int userId);
+
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     LiveData<User> getUserByEmail(String email);
 

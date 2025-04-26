@@ -33,6 +33,9 @@ public interface CartDao {
     @Query("SELECT * FROM cart_items WHERE userId = :userId AND productId = :productId LIMIT 1")
     CartItem getCartItemByProduct(int userId, int productId);
 
+    @Query("SELECT * FROM cart_items WHERE cartItemId = :cartItemId LIMIT 1")
+    CartItem getCartItemById(int cartItemId);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertCartItem(CartItem item);
 
@@ -50,7 +53,6 @@ public interface CartDao {
 
     @Query("UPDATE cart_items SET quantity = :quantity WHERE cartItemId = :cartItemId AND userId = :userId")
     void updateQuantity(int cartItemId, int userId, int quantity);
-
 
     // Transaction to check if adding to cart would exceed available stock
     @Transaction

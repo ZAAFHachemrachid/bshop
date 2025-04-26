@@ -15,10 +15,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.b_shop.BShopApplication;
 import com.example.b_shop.R;
+import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.databinding.FragmentCartBinding;
 import com.example.b_shop.domain.usecases.CheckoutUseCase.CheckoutState;
 import com.example.b_shop.ui.cart.CartAdapter.CartItemListener;
+import com.example.b_shop.utils.UserManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -31,6 +34,7 @@ public class CartFragment extends Fragment implements CartItemListener {
     private CartViewModel viewModel;
     private CartAdapter adapter;
     private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.getDefault());
+    private Snackbar currentErrorSnackbar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +58,7 @@ public class CartFragment extends Fragment implements CartItemListener {
         setupRecyclerView();
         setupButtons();
         setupViewModel();
+        setupSwipeToRefresh();
     }
 
     private void setupToolbar() {
@@ -76,13 +81,34 @@ public class CartFragment extends Fragment implements CartItemListener {
     }
 
     private void setupViewModel() {
-        viewModel = new ViewModelProvider(this).get(CartViewModel.class);
+        AppDatabase database = ((BShopApplication) requireActivity().getApplication())
+            .getDatabase();
+        UserManager userManager = ((BShopApplication) requireActivity().getApplication())
+            .getUserManager();
+        
+        CartViewModelFactory factory = new CartViewModelFactory(database, userManager);
+        viewModel = new ViewModelProvider(this, factory).get(CartViewModel.class);
         viewModel.getUiState().observe(getViewLifecycleOwner(), this::updateUI);
+    }
+
+    private void setupSwipeToRefresh() {
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            dismissError();
+            binding.swipeRefresh.setRefreshing(true);
+            // Cart state will refresh automatically through LiveData
+        });
     }
 
     private void updateUI(CartViewModel.CartUIState state) {
         // Update loading state
         binding.loading.setVisibility(state.isLoading() ? View.VISIBLE : View.GONE);
+        binding.swipeRefresh.setRefreshing(state.isLoading());
+
+        // Handle session expiration
+        if (state.requiresLogin()) {
+            showLoginRequired();
+            return;
+        }
 
         // Update empty state
         binding.emptyState.setVisibility(state.isEmpty() ? View.VISIBLE : View.GONE);
@@ -90,14 +116,16 @@ public class CartFragment extends Fragment implements CartItemListener {
         binding.checkoutContainer.setVisibility(state.isEmpty() ? View.GONE : View.VISIBLE);
 
         // Update cart items
-        if (state.getCartState() != null) {
-            adapter.submitList(state.getCartState().getItems());
+        if (state.getItems() != null) {
+            adapter.submitList(state.getItems());
             binding.textTotal.setText(currencyFormatter.format(state.getTotal()));
         }
 
         // Handle errors
         if (state.getError() != null) {
             showError(state.getError());
+        } else {
+            dismissError();
         }
 
         // Handle checkout state
@@ -111,7 +139,7 @@ public class CartFragment extends Fragment implements CartItemListener {
 
         switch (checkoutState) {
             case PROCESSING:
-                // Show loading indicator
+                showCheckoutProcessing();
                 break;
             case COMPLETED:
                 showCheckoutSuccess();
@@ -124,12 +152,19 @@ public class CartFragment extends Fragment implements CartItemListener {
         }
     }
 
+    private void showCheckoutProcessing() {
+        binding.buttonCheckout.setEnabled(false);
+        binding.buttonCheckout.setText(R.string.processing);
+    }
+
     private void showCheckoutSuccess() {
         new MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.checkout_success_title)
             .setMessage(R.string.checkout_success_message)
             .setPositiveButton(R.string.view_orders, (dialog, which) -> {
-                // TODO: Navigate to orders screen
+                // Navigate to orders screen
+                Navigation.findNavController(requireView())
+                    .navigate(R.id.action_cart_to_orders);
             })
             .setNegativeButton(R.string.continue_shopping, (dialog, which) ->
                 Navigation.findNavController(requireView()).navigateUp())
@@ -137,8 +172,36 @@ public class CartFragment extends Fragment implements CartItemListener {
             .show();
     }
 
+    private void showLoginRequired() {
+        new MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.session_expired_title)
+            .setMessage(R.string.session_expired_message)
+            .setPositiveButton(R.string.login, (dialog, which) -> {
+                // Navigate to login screen
+                Navigation.findNavController(requireView())
+                    .navigate(R.id.action_cart_to_auth);
+            })
+            .setCancelable(false)
+            .show();
+    }
+
     private void showError(String message) {
-        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_LONG).show();
+        dismissError();
+        currentErrorSnackbar = Snackbar.make(
+            binding.getRoot(), 
+            message,
+            Snackbar.LENGTH_INDEFINITE
+        );
+        currentErrorSnackbar.setAction(R.string.dismiss, v -> dismissError());
+        currentErrorSnackbar.show();
+    }
+
+    private void dismissError() {
+        if (currentErrorSnackbar != null) {
+            currentErrorSnackbar.dismiss();
+            currentErrorSnackbar = null;
+        }
+        viewModel.clearError();
     }
 
     @Override
@@ -159,25 +222,30 @@ public class CartFragment extends Fragment implements CartItemListener {
         new MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.clear_cart_title)
             .setMessage(R.string.clear_cart_message)
-            .setPositiveButton(R.string.clear, (dialog, which) ->
-                viewModel.clearCart())
+            .setPositiveButton(R.string.clear, (dialog, which) -> {
+                dismissError();
+                viewModel.clearCart();
+            })
             .setNegativeButton(R.string.cancel, null)
             .show();
     }
 
     @Override
     public void onUpdateQuantity(int cartItemId, int quantity) {
+        dismissError();
         viewModel.updateQuantity(cartItemId, quantity);
     }
 
     @Override
     public void onRemoveItem(int cartItemId) {
+        dismissError();
         viewModel.removeItem(cartItemId);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        dismissError();
         binding = null;
     }
 }

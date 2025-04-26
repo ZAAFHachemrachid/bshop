@@ -24,6 +24,18 @@ public class User {
         this.password = password;
     }
 
+    // Constructor for creating user with specific ID (for testing/development)
+    public User(int userId, String name, String email, String password) {
+        this.userId = userId;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+
+    // Required by Room
+    public User() {
+    }
+
     // Getters
     public int getUserId() {
         return userId;

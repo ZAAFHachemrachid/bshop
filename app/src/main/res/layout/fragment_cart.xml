@@ -21,138 +21,145 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
-            <!-- Content -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_cart"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:clipToPadding="false"
-                android:paddingVertical="8dp"
-                app:layout_constraintBottom_toTopOf="@id/checkout_container"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_cart_product"/>
+                android:layout_height="match_parent">
 
-            <!-- Empty State -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/empty_state"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:visibility="gone"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:visibility="visible">
+                <!-- Content -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_cart"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:clipToPadding="false"
+                    android:paddingVertical="8dp"
+                    app:layout_constraintBottom_toTopOf="@id/checkout_container"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_cart_product"/>
 
-                <LinearLayout
+                <!-- Empty State -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/empty_state"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="24dp">
+                    android:layout_margin="16dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:visibility="visible">
 
-                    <ImageView
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:src="@drawable/ic_cart"
-                        app:tint="?attr/colorPrimary"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="@string/cart_empty"
-                        android:textAppearance="?attr/textAppearanceHeadline6"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:gravity="center"
-                        android:text="@string/cart_empty_message"
-                        android:textAppearance="?attr/textAppearanceBody2"/>
+                        android:orientation="vertical"
+                        android:padding="24dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/button_browse"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="@string/browse_products"/>
+                        <ImageView
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:src="@drawable/ic_cart"
+                            app:tint="?attr/colorPrimary"/>
 
-                </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="@string/cart_empty"
+                            android:textAppearance="?attr/textAppearanceHeadline6"/>
 
-            </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="@string/cart_empty_message"
+                            android:textAppearance="?attr/textAppearanceBody2"/>
 
-            <!-- Loading State -->
-            <com.google.android.material.progressindicator.CircularProgressIndicator
-                android:id="@+id/loading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:indeterminate="true"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_browse"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="@string/browse_products"/>
 
-            <!-- Checkout Container -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/checkout_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardElevation="8dp"
-                app:layout_constraintBottom_toBottomOf="parent">
+                    </LinearLayout>
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Loading State -->
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/loading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <!-- Checkout Container -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/checkout_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp">
+                    app:cardElevation="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent">
 
-                    <TextView
-                        android:id="@+id/label_total"
-                        android:layout_width="wrap_content"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/total"
-                        android:textAppearance="?attr/textAppearanceBody1"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
+                        android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/text_total"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?attr/textAppearanceHeadline6"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/label_total"
-                        tools:text="$159.96"/>
+                        <TextView
+                            android:id="@+id/label_total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/total"
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"/>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/button_checkout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/checkout"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
+                        <TextView
+                            android:id="@+id/text_total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceHeadline6"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/label_total"
+                            tools:text="$159.96"/>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_checkout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/checkout"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"/>
 
-            </com.google.android.material.card.MaterialCardView>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-    </androidx.core.widget.NestedScrollView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

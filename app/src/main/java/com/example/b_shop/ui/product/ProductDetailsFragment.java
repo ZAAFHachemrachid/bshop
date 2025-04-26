@@ -11,8 +11,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager2.widget.ViewPager2;
+
+import com.example.b_shop.BShopApplication;
 import com.example.b_shop.R;
+import com.example.b_shop.data.repositories.ProductRepository;
+import com.example.b_shop.data.repositories.ReviewRepository;
 import com.example.b_shop.databinding.FragmentProductDetailsBinding;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class ProductDetailsFragment extends Fragment {
@@ -23,21 +28,6 @@ public class ProductDetailsFragment extends Fragment {
     private ProductReviewAdapter reviewAdapter;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(ProductDetailsViewModel.class);
-        
-        // Get product ID from arguments
-        if (getArguments() != null) {
-            int productId = getArguments().getInt("productId", -1);
-            if (productId != -1) {
-                viewModel.loadProductDetails(productId);
-            }
-        }
-    }
-
-    @Nullable
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                            @Nullable Bundle savedInstanceState) {
         binding = FragmentProductDetailsBinding.inflate(inflater, container, false);
@@ -47,11 +37,40 @@ public class ProductDetailsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        setupViewModel();
+        
+        // Load product details after ViewModel is initialized
+        if (getArguments() != null) {
+            int productId = getArguments().getInt("productId", -1);
+            if (productId != -1) {
+                viewModel.loadProductDetails(productId);
+            }
+        }
+        
         setupToolbar();
         setupImageGallery();
         setupReviewsList();
         setupClickListeners();
         observeViewModel();
+    }
+
+    private void setupViewModel() {
+        // Get application instance
+        BShopApplication application = (BShopApplication) requireActivity().getApplication();
+        
+        // Get repositories
+        ProductRepository productRepository = application.getProductRepository();
+        ReviewRepository reviewRepository = application.getReviewRepository();
+        
+        // Create factory
+        ProductDetailsViewModel.Factory factory = new ProductDetailsViewModel.Factory(
+            productRepository,
+            reviewRepository
+        );
+        
+        // Get ViewModel instance using factory
+        viewModel = new ViewModelProvider(this, factory).get(ProductDetailsViewModel.class);
     }
 
     private void setupToolbar() {
@@ -89,7 +108,6 @@ public class ProductDetailsFragment extends Fragment {
 
     private void setupClickListeners() {
         binding.buttonAddToCart.setOnClickListener(v -> {
-            // Will be implemented with cart functionality
             viewModel.addToCart(1);
         });
 
@@ -99,6 +117,18 @@ public class ProductDetailsFragment extends Fragment {
     }
 
     private void observeViewModel() {
+        // Observe loading state
+        viewModel.isLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.loadingProgress.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        });
+
+        // Observe error state
+        viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Snackbar.make(binding.getRoot(), error, Snackbar.LENGTH_LONG).show();
+            }
+        });
+
         // Observe product details
         viewModel.getProduct().observe(getViewLifecycleOwner(), product -> {
             if (product != null) {
@@ -129,8 +159,9 @@ public class ProductDetailsFragment extends Fragment {
         // Observe cart operation status
         viewModel.getAddToCartStatus().observe(getViewLifecycleOwner(), success -> {
             if (success) {
-                // Show success message
-                // Will be implemented with cart functionality
+                Snackbar.make(binding.getRoot(), 
+                    R.string.added_to_cart,
+                    Snackbar.LENGTH_SHORT).show();
             }
         });
     }

@@ -4,10 +4,17 @@ import android.content.Context;
 import android.os.AsyncTask;
 import com.example.b_shop.data.local.entities.Category;
 import com.example.b_shop.data.local.entities.Product;
+import com.example.b_shop.data.local.entities.User;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DatabaseInitializer {
+    // Default user credentials
+    private static final int DEFAULT_USER_ID = 1;
+    private static final String DEFAULT_USER_EMAIL = "test@example.com";
+    private static final String DEFAULT_USER_NAME = "Test User";
+    private static final String DEFAULT_USER_PASSWORD = "password123"; // For development only
+
     private static final Map<String, String> CATEGORIES = new HashMap<String, String>() {{
         put("Face Products", "Essential cosmetics for creating a flawless base");
         put("Eye Products", "Everything you need for stunning eye makeup");
@@ -63,24 +70,35 @@ public class DatabaseInitializer {
     private static void populate(Context context) {
         AppDatabase db = AppDatabase.getInstance(context);
 
-        // Check if database is already populated
-        if (db.categoryDao().getCategoryCount() > 0) {
-            return;
-        }
+        try {
+            // Create default user if it doesn't exist
+            if (db.userDao().getUserByIdSync(DEFAULT_USER_ID) == null) {
+                User defaultUser = new User(DEFAULT_USER_ID, DEFAULT_USER_NAME, DEFAULT_USER_EMAIL, DEFAULT_USER_PASSWORD);
+                db.userDao().insert(defaultUser);
+            }
 
-        // Add categories
-        for (Map.Entry<String, String> entry : CATEGORIES.entrySet()) {
-            Category category = new Category(entry.getKey(), entry.getValue(), null);
-            int categoryId = (int) db.categoryDao().insert(category);
+            // Check if products are already populated
+            if (db.categoryDao().getCategoryCount() > 0) {
+                return;
+            }
 
-            // Add products for this category
-            Product[] products = PRODUCTS.get(entry.getKey());
-            if (products != null) {
-                for (Product product : products) {
-                    product.setCategoryId(categoryId);
-                    db.productDao().insert(product);
+            // Add categories
+            for (Map.Entry<String, String> entry : CATEGORIES.entrySet()) {
+                Category category = new Category(entry.getKey(), entry.getValue(), null);
+                int categoryId = (int) db.categoryDao().insert(category);
+
+                // Add products for this category
+                Product[] products = PRODUCTS.get(entry.getKey());
+                if (products != null) {
+                    for (Product product : products) {
+                        product.setCategoryId(categoryId);
+                        db.productDao().insert(product);
+                    }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Log error but don't crash the app
         }
     }
 }

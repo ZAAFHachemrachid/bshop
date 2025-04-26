@@ -7,6 +7,25 @@
     <string name="product_details">Product Details</string>
     <string name="category_image">Category image</string>
     <string name="product_image">Product image</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="processing">Processing...</string>
+    <string name="login">Login</string>
+
+    <!-- Session -->
+    <string name="session_expired_title">Session Expired</string>
+    <string name="session_expired_message">Your session has expired. Please login again to continue.</string>
+
+    <!-- Product Details -->
+    <string name="added_to_cart">Added to cart</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="product_description">Description</string>
+    <string name="product_reviews">Reviews</string>
+
+    <!-- Wish List -->
+    <string name="wish_list">Wish List</string>
+    <string name="wishlist_empty">Your Wish List is Empty</string>
+    <string name="wishlist_empty_message">Save items you want to buy later</string>
+    <string name="remove_from_wishlist">Remove from wish list</string>
 
     <!-- Cart -->
     <string name="cart">Cart</string>

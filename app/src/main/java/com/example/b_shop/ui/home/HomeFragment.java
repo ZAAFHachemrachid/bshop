@@ -201,7 +201,7 @@ public class HomeFragment extends Fragment {
 
         binding.searchBar.setOnClickListener(v ->
             Navigation.findNavController(v)
-                    .navigate(R.id.navigation_search));
+                    .navigate(R.id.navigation_wishlist));
     }
 
     @Override

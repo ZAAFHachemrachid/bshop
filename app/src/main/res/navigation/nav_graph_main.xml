@@ -62,6 +62,12 @@
         <action
             android:id="@+id/action_cart_to_checkout"
             app:destination="@id/checkoutFragment" />
+        <action
+            android:id="@+id/action_cart_to_auth"
+            app:destination="@id/auth_activity" />
+        <action
+            android:id="@+id/action_cart_to_orders"
+            app:destination="@id/ordersFragment" />
     </fragment>
 
     <!-- Placeholder for future checkout implementation -->
@@ -69,5 +75,26 @@
         android:id="@+id/checkoutFragment"
         android:name="com.example.b_shop.ui.checkout.CheckoutFragment"
         android:label="@string/checkout" />
+
+    <fragment
+        android:id="@+id/navigation_wishlist"
+        android:name="com.example.b_shop.ui.wishlist.WishListFragment"
+        android:label="@string/wish_list">
+        <action
+            android:id="@+id/action_wishlist_to_product_details"
+            app:destination="@id/productDetailsFragment" />
+    </fragment>
+
+    <!-- Orders Fragment -->
+    <fragment
+        android:id="@+id/ordersFragment"
+        android:name="com.example.b_shop.ui.orders.OrdersFragment"
+        android:label="@string/view_orders" />
+
+    <!-- Auth Activity -->
+    <activity
+        android:id="@+id/auth_activity"
+        android:name="com.example.b_shop.ui.auth.AuthActivity"
+        android:label="@string/login" />
 
 </navigation>

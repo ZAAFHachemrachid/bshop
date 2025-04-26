@@ -5,6 +5,7 @@ import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.DatabaseInitializer;
 import com.example.b_shop.data.repositories.*;
 import com.example.b_shop.data.local.dao.*;
+import com.example.b_shop.utils.UserManager;
 
 public class BShopApplication extends Application {
     private AppDatabase database;
@@ -13,6 +14,11 @@ public class BShopApplication extends Application {
     private UserRepository userRepository;
     private OrderRepository orderRepository;
     private ReviewRepository reviewRepository;
+    private UserManager userManager;
+
+    private static final int DEFAULT_USER_ID = 1;
+    private static final String DEFAULT_USER_EMAIL = "test@example.com";
+    private static final String DEFAULT_USER_NAME = "Test User";
 
     @Override
     public void onCreate() {
@@ -28,6 +34,12 @@ public class BShopApplication extends Application {
         OrderDao orderDao = database.orderDao();
         ReviewDao reviewDao = database.reviewDao();
 
+        // Initialize UserManager and set default user for development
+        userManager = UserManager.getInstance(this);
+        if (!userManager.isUserLoggedIn()) {
+            userManager.loginUser(DEFAULT_USER_ID, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME);
+        }
+
         // Initialize repositories with DAOs
         categoryRepository = new CategoryRepository(categoryDao);
         productRepository = new ProductRepository(productDao, userDao);
@@ -37,6 +49,16 @@ public class BShopApplication extends Application {
 
         // Initialize database with sample data
         DatabaseInitializer.populateAsync(this);
+    }
+
+    // Getter for database instance
+    public AppDatabase getDatabase() {
+        return database;
+    }
+
+    // Getter for UserManager instance
+    public UserManager getUserManager() {
+        return userManager;
     }
 
     // Repository getters

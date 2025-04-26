@@ -1,11 +1,14 @@
 package com.example.b_shop.data.repositories;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import com.example.b_shop.data.local.dao.CartDao;
 import com.example.b_shop.data.local.relations.CartItemWithProduct;
 import com.example.b_shop.data.local.dao.ProductDao;
 import com.example.b_shop.data.local.entities.CartItem;
 import com.example.b_shop.data.local.entities.Product;
+import com.example.b_shop.data.local.errors.CartError;
+import com.example.b_shop.data.local.models.CartOperationResult;
 import com.example.b_shop.utils.UserManager;
 
 import java.util.List;
@@ -17,32 +20,75 @@ public class CartRepository {
     private final ProductDao productDao;
     private final UserManager userManager;
     private final ExecutorService executorService;
+    private final MutableLiveData<CartError> cartError;
 
     public CartRepository(CartDao cartDao, ProductDao productDao, UserManager userManager) {
         this.cartDao = cartDao;
         this.productDao = productDao;
         this.userManager = userManager;
         this.executorService = Executors.newSingleThreadExecutor();
+        this.cartError = new MutableLiveData<>();
     }
 
     public LiveData<List<CartItemWithProduct>> getCartItems() {
-        return cartDao.getCartItemsWithProduct(userManager.getCurrentUserId());
+        try {
+            userManager.validateUserSession();
+            return cartDao.getCartItemsWithProduct(userManager.getCurrentUserId());
+        } catch (IllegalStateException e) {
+            cartError.postValue(CartError.sessionExpired());
+            return new MutableLiveData<>();
+        }
     }
 
     public LiveData<Float> getCartTotal() {
-        return cartDao.getCartTotal(userManager.getCurrentUserId());
+        try {
+            userManager.validateUserSession();
+            return cartDao.getCartTotal(userManager.getCurrentUserId());
+        } catch (IllegalStateException e) {
+            cartError.postValue(CartError.sessionExpired());
+            return new MutableLiveData<>();
+        }
     }
 
     public LiveData<Integer> getCartItemCount() {
-        return cartDao.getCartItemCount(userManager.getCurrentUserId());
+        try {
+            userManager.validateUserSession();
+            return cartDao.getCartItemCount(userManager.getCurrentUserId());
+        } catch (IllegalStateException e) {
+            cartError.postValue(CartError.sessionExpired());
+            return new MutableLiveData<>();
+        }
     }
 
-    public void addToCart(int productId, int quantity) {
+    public LiveData<CartError> getCartError() {
+        return cartError;
+    }
+
+    public void addToCart(int productId, int quantity, CartOperationCallback callback) {
         executorService.execute(() -> {
             try {
+                userManager.validateUserSession();
+
+                if (quantity <= 0) {
+                    CartError error = CartError.invalidQuantity(quantity);
+                    cartError.postValue(error);
+                    callback.onError(error);
+                    return;
+                }
+
                 Product product = productDao.getProductSync(productId);
                 if (product == null) {
-                    // TODO: Handle error - product not found
+                    CartError error = CartError.productNotFound(productId);
+                    cartError.postValue(error);
+                    callback.onError(error);
+                    return;
+                }
+
+                // Check if adding this quantity would exceed stock
+                if (!validateStock(productId, quantity)) {
+                    CartError error = CartError.insufficientStock(productId, quantity, product.getStock());
+                    cartError.postValue(error);
+                    callback.onError(error);
                     return;
                 }
 
@@ -53,46 +99,100 @@ public class CartRepository {
                     product.getPrice()
                 );
 
-                boolean success = cartDao.validateAndAddToCart(cartItem, product);
-                if (!success) {
-                    // TODO: Handle error - insufficient stock
+                cartDao.insertCartItem(cartItem);
+                callback.onSuccess();
+
+            } catch (IllegalStateException e) {
+                CartError error = CartError.sessionExpired();
+                cartError.postValue(error);
+                callback.onError(error);
+            } catch (Exception e) {
+                CartError error = CartError.databaseError("Failed to add item to cart", e);
+                cartError.postValue(error);
+                callback.onError(error);
+            }
+        });
+    }
+
+    public void updateQuantity(int cartItemId, int quantity, CartOperationCallback callback) {
+        executorService.execute(() -> {
+            try {
+                userManager.validateUserSession();
+
+                if (quantity <= 0) {
+                    CartError error = CartError.invalidQuantity(quantity);
+                    cartError.postValue(error);
+                    callback.onError(error);
+                    return;
                 }
-            } catch (Exception e) {
-                // TODO: Handle error
-                e.printStackTrace();
-            }
-        });
-    }
 
-    public void updateQuantity(int cartItemId, int quantity) {
-        executorService.execute(() -> {
-            try {
+                CartItem cartItem = cartDao.getCartItemById(cartItemId);
+                if (cartItem == null) {
+                    CartError error = CartError.productNotFound(cartItemId);
+                    cartError.postValue(error);
+                    callback.onError(error);
+                    return;
+                }
+
+                if (!validateStock(cartItem.getProductId(), quantity)) {
+                    Product product = productDao.getProductSync(cartItem.getProductId());
+                    CartError error = CartError.insufficientStock(
+                        cartItem.getProductId(), 
+                        quantity, 
+                        product.getStock()
+                    );
+                    cartError.postValue(error);
+                    callback.onError(error);
+                    return;
+                }
+
                 cartDao.updateQuantity(cartItemId, userManager.getCurrentUserId(), quantity);
+                callback.onSuccess();
+
+            } catch (IllegalStateException e) {
+                CartError error = CartError.sessionExpired();
+                cartError.postValue(error);
+                callback.onError(error);
             } catch (Exception e) {
-                // TODO: Handle error
-                e.printStackTrace();
+                CartError error = CartError.databaseError("Failed to update quantity", e);
+                cartError.postValue(error);
+                callback.onError(error);
             }
         });
     }
 
-    public void removeFromCart(int cartItemId) {
+    public void removeFromCart(int cartItemId, CartOperationCallback callback) {
         executorService.execute(() -> {
             try {
+                userManager.validateUserSession();
                 cartDao.deleteCartItemById(cartItemId, userManager.getCurrentUserId());
+                callback.onSuccess();
+            } catch (IllegalStateException e) {
+                CartError error = CartError.sessionExpired();
+                cartError.postValue(error);
+                callback.onError(error);
             } catch (Exception e) {
-                // TODO: Handle error
-                e.printStackTrace();
+                CartError error = CartError.databaseError("Failed to remove item from cart", e);
+                cartError.postValue(error);
+                callback.onError(error);
             }
         });
     }
 
-    public void clearCart() {
+    public void clearCart(CartOperationCallback callback) {
         executorService.execute(() -> {
             try {
+                userManager.validateUserSession();
                 cartDao.clearCart(userManager.getCurrentUserId());
+                callback.onSuccess();
+            } catch (IllegalStateException e) {
+                CartError error = CartError.sessionExpired();
+                cartError.postValue(error);
+                callback.onError(error);
             } catch (Exception e) {
-                // TODO: Handle error
-                e.printStackTrace();
+                CartError error = CartError.databaseError("Failed to clear cart", e);
+                cartError.postValue(error);
+                callback.onError(error);
             }
         });
     }
@@ -114,12 +214,20 @@ public class CartRepository {
 
             return totalQuantity <= product.getStock();
         } catch (Exception e) {
-            e.printStackTrace();
+            cartError.postValue(CartError.databaseError("Failed to validate stock", e));
             return false;
         }
     }
 
     public void cleanup() {
         executorService.shutdown();
+    }
+
+    /**
+     * Callback interface for cart operations
+     */
+    public interface CartOperationCallback {
+        void onSuccess();
+        void onError(CartError error);
     }
 }

@@ -2,24 +2,24 @@ package com.example.b_shop.domain.usecases;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.Transformations;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.b_shop.data.local.relations.CartItemWithProduct;
+import com.example.b_shop.data.local.errors.CartError;
 import com.example.b_shop.data.repositories.CartRepository;
+import com.example.b_shop.data.repositories.CartRepository.CartOperationCallback;
 import com.example.b_shop.data.repositories.ProductRepository;
 import com.example.b_shop.utils.UserManager;
 
 import java.util.List;
 
-/**
- * Use case that handles cart-related business logic
- */
 public class CartUseCase {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserManager userManager;
     
     private final MediatorLiveData<CartState> cartState;
+    private final MutableLiveData<CartError> operationError;
 
     public CartUseCase(
         CartRepository cartRepository,
@@ -30,6 +30,7 @@ public class CartUseCase {
         this.productRepository = productRepository;
         this.userManager = userManager;
         this.cartState = new MediatorLiveData<>();
+        this.operationError = new MutableLiveData<>();
         
         initializeCartState();
     }
@@ -38,6 +39,7 @@ public class CartUseCase {
         LiveData<List<CartItemWithProduct>> items = cartRepository.getCartItems();
         LiveData<Float> total = cartRepository.getCartTotal();
         LiveData<Integer> itemCount = cartRepository.getCartItemCount();
+        LiveData<CartError> repoError = cartRepository.getCartError();
 
         cartState.addSource(items, cartItems -> 
             updateCartState(cartItems, total.getValue(), itemCount.getValue()));
@@ -47,6 +49,12 @@ public class CartUseCase {
         
         cartState.addSource(itemCount, count -> 
             updateCartState(items.getValue(), total.getValue(), count));
+        
+        cartState.addSource(repoError, error -> {
+            if (error != null) {
+                operationError.setValue(error);
+            }
+        });
     }
 
     private void updateCartState(
@@ -63,59 +71,70 @@ public class CartUseCase {
         return cartState;
     }
 
+    public LiveData<CartError> getOperationError() {
+        return operationError;
+    }
+
+    public void clearError() {
+        operationError.setValue(null);
+    }
+
     public void addToCart(int productId, int quantity) {
-        try {
-            userManager.validateUserSession();
-            
-            if (validateStock(productId, quantity)) {
-                cartRepository.addToCart(productId, quantity);
-            } else {
-                // TODO: Notify insufficient stock
+        cartRepository.addToCart(productId, quantity, new CartOperationCallback() {
+            @Override
+            public void onSuccess() {
+                // State will be updated via LiveData
             }
-        } catch (IllegalStateException e) {
-            // TODO: Notify user needs to login
-        }
+
+            @Override
+            public void onError(CartError error) {
+                operationError.setValue(error);
+            }
+        });
     }
 
     public void updateQuantity(int cartItemId, int quantity) {
-        try {
-            userManager.validateUserSession();
-            
-            if (quantity <= 0) {
-                cartRepository.removeFromCart(cartItemId);
-            } else {
-                cartRepository.updateQuantity(cartItemId, quantity);
+        cartRepository.updateQuantity(cartItemId, quantity, new CartOperationCallback() {
+            @Override
+            public void onSuccess() {
+                // State will be updated via LiveData
             }
-        } catch (IllegalStateException e) {
-            // TODO: Notify user needs to login
-        }
+
+            @Override
+            public void onError(CartError error) {
+                operationError.setValue(error);
+            }
+        });
     }
 
     public void removeItem(int cartItemId) {
-        try {
-            userManager.validateUserSession();
-            cartRepository.removeFromCart(cartItemId);
-        } catch (IllegalStateException e) {
-            // TODO: Notify user needs to login
-        }
+        cartRepository.removeFromCart(cartItemId, new CartOperationCallback() {
+            @Override
+            public void onSuccess() {
+                // State will be updated via LiveData
+            }
+
+            @Override
+            public void onError(CartError error) {
+                operationError.setValue(error);
+            }
+        });
     }
 
     public void clearCart() {
-        try {
-            userManager.validateUserSession();
-            cartRepository.clearCart();
-        } catch (IllegalStateException e) {
-            // TODO: Notify user needs to login
-        }
+        cartRepository.clearCart(new CartOperationCallback() {
+            @Override
+            public void onSuccess() {
+                // State will be updated via LiveData
+            }
+
+            @Override
+            public void onError(CartError error) {
+                operationError.setValue(error);
+            }
+        });
     }
 
-    private boolean validateStock(int productId, int quantity) {
-        return cartRepository.validateStock(productId, quantity);
-    }
-
-    /**
-     * Represents the current state of the shopping cart
-     */
     public static class CartState {
         private final List<CartItemWithProduct> items;
         private final float total;

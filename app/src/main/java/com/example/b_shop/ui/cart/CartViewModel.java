@@ -5,89 +5,91 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.b_shop.data.local.errors.CartError;
+import com.example.b_shop.data.local.errors.CartError.CartErrorType;
+import com.example.b_shop.data.local.relations.CartItemWithProduct;
 import com.example.b_shop.domain.usecases.CartUseCase;
 import com.example.b_shop.domain.usecases.CartUseCase.CartState;
 import com.example.b_shop.domain.usecases.CheckoutUseCase;
 import com.example.b_shop.domain.usecases.CheckoutUseCase.CheckoutState;
-import com.example.b_shop.domain.usecases.CheckoutUseCase.CheckoutResult;
-import com.example.b_shop.utils.UserManager;
 
-/**
- * ViewModel for the cart screen that handles cart-related operations and state management
- */
+import java.util.List;
+
 public class CartViewModel extends ViewModel {
     private final CartUseCase cartUseCase;
     private final CheckoutUseCase checkoutUseCase;
-    private final UserManager userManager;
-
-    private final MutableLiveData<CartUIState> _uiState;
-    private final LiveData<CartUIState> uiState;
-
-    public CartViewModel(
-        CartUseCase cartUseCase,
-        CheckoutUseCase checkoutUseCase,
-        UserManager userManager
-    ) {
+    
+    private final MediatorLiveData<CartUIState> uiState;
+    private CartError lastError;
+    
+    public CartViewModel(CartUseCase cartUseCase, CheckoutUseCase checkoutUseCase) {
         this.cartUseCase = cartUseCase;
         this.checkoutUseCase = checkoutUseCase;
-        this.userManager = userManager;
-
-        this._uiState = new MutableLiveData<>(CartUIState.loading());
-        this.uiState = setupUiState();
+        this.uiState = new MediatorLiveData<>();
+        
+        initializeState();
     }
 
-    private LiveData<CartUIState> setupUiState() {
-        MediatorLiveData<CartUIState> mediator = new MediatorLiveData<>();
+    private void initializeState() {
+        // Observe cart state changes
+        uiState.addSource(cartUseCase.getCartState(), this::handleCartStateChange);
+        
+        // Observe operation errors
+        uiState.addSource(cartUseCase.getOperationError(), this::handleError);
+        
+        // Initialize with loading state
+        uiState.setValue(new CartUIState(true));
+    }
 
-        // Observe cart state
-        mediator.addSource(cartUseCase.getCartState(), cartState -> {
-            if (cartState == null) {
-                mediator.setValue(CartUIState.loading());
-                return;
-            }
+    private void handleCartStateChange(CartState cartState) {
+        if (cartState == null) {
+            uiState.setValue(new CartUIState(true));
+            return;
+        }
 
-            CartUIState currentState = _uiState.getValue();
-            if (currentState == null) {
-                currentState = CartUIState.loading();
-            }
+        uiState.setValue(new CartUIState(
+            cartState.getItems(),
+            cartState.getTotal(),
+            false,
+            lastError != null ? lastError.getDetails() : null,
+            cartState.isEmpty(),
+            checkoutUseCase.getCheckoutState().getValue(),
+            null
+        ));
+    }
 
-            mediator.setValue(new CartUIState(
-                cartState,
-                currentState.isLoading(),
-                currentState.getError(),
-                currentState.getCheckoutState(),
-                currentState.getCheckoutError()
-            ));
-        });
+    private void handleError(CartError error) {
+        if (error == null) {
+            lastError = null;
+            return;
+        }
 
-        // Observe checkout state
-        mediator.addSource(checkoutUseCase.getCheckoutState(), checkoutState -> {
-            CartUIState currentState = _uiState.getValue();
-            if (currentState == null) return;
-
-            boolean isLoading = checkoutState == CheckoutState.PROCESSING;
-            mediator.setValue(currentState.copy(
-                isLoading,
-                null,
-                checkoutState,
-                currentState.getCheckoutError()
-            ));
-        });
-
-        // Observe checkout result
-        mediator.addSource(checkoutUseCase.getCheckoutResult(), result -> {
-            CartUIState currentState = _uiState.getValue();
-            if (currentState == null || result == null) return;
-
-            mediator.setValue(currentState.copy(
+        lastError = error;
+        
+        // Handle session expiration differently
+        if (error.getType() == CartErrorType.SESSION_EXPIRED) {
+            // Trigger navigation to login
+            uiState.setValue(new CartUIState(
                 false,
-                null,
-                currentState.getCheckoutState(),
-                result.isSuccess() ? null : result.getError()
+                error.getDetails(),
+                true  // requiresLogin
             ));
-        });
+            return;
+        }
 
-        return mediator;
+        // Update UI state with error
+        CartUIState currentState = uiState.getValue();
+        if (currentState != null) {
+            uiState.setValue(new CartUIState(
+                currentState.getItems(),
+                currentState.getTotal(),
+                false,
+                error.getDetails(),
+                currentState.isEmpty(),
+                currentState.getCheckoutState(),
+                null
+            ));
+        }
     }
 
     public LiveData<CartUIState> getUiState() {
@@ -95,81 +97,107 @@ public class CartViewModel extends ViewModel {
     }
 
     public void updateQuantity(int cartItemId, int quantity) {
+        clearError();
         cartUseCase.updateQuantity(cartItemId, quantity);
     }
 
     public void removeItem(int cartItemId) {
+        clearError();
         cartUseCase.removeItem(cartItemId);
     }
 
     public void clearCart() {
+        clearError();
         cartUseCase.clearCart();
     }
 
     public void checkout() {
-        if (!userManager.isUserLoggedIn()) {
-            _uiState.setValue(_uiState.getValue().copy(
-                false,
-                "Please login to checkout",
-                null,
-                null
-            ));
-            return;
-        }
+        clearError();
         checkoutUseCase.checkout();
     }
 
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        checkoutUseCase.cleanup();
+    public void clearError() {
+        cartUseCase.clearError();
+        lastError = null;
+        
+        // Clear error from current UI state
+        CartUIState currentState = uiState.getValue();
+        if (currentState != null && currentState.getError() != null) {
+            uiState.setValue(new CartUIState(
+                currentState.getItems(),
+                currentState.getTotal(),
+                false,
+                null,
+                currentState.isEmpty(),
+                currentState.getCheckoutState(),
+                null
+            ));
+        }
     }
 
     /**
-     * Represents the UI state for the cart screen
+     * Represents the UI state of the cart screen
      */
     public static class CartUIState {
-        private final CartState cartState;
+        private final List<CartItemWithProduct> items;
+        private final float total;
         private final boolean isLoading;
         private final String error;
+        private final boolean isEmpty;
         private final CheckoutState checkoutState;
         private final String checkoutError;
+        private final boolean requiresLogin;
 
-        private CartUIState(
-            CartState cartState,
+        // Constructor for loading state
+        public CartUIState(boolean isLoading) {
+            this.isLoading = isLoading;
+            this.items = null;
+            this.total = 0;
+            this.error = null;
+            this.isEmpty = true;
+            this.checkoutState = null;
+            this.checkoutError = null;
+            this.requiresLogin = false;
+        }
+
+        // Constructor for session expired state
+        public CartUIState(boolean isLoading, String error, boolean requiresLogin) {
+            this.isLoading = isLoading;
+            this.items = null;
+            this.total = 0;
+            this.error = error;
+            this.isEmpty = true;
+            this.checkoutState = null;
+            this.checkoutError = null;
+            this.requiresLogin = requiresLogin;
+        }
+
+        // Constructor for normal state
+        public CartUIState(
+            List<CartItemWithProduct> items,
+            float total,
             boolean isLoading,
             String error,
+            boolean isEmpty,
             CheckoutState checkoutState,
             String checkoutError
         ) {
-            this.cartState = cartState;
+            this.items = items;
+            this.total = total;
             this.isLoading = isLoading;
             this.error = error;
+            this.isEmpty = isEmpty;
             this.checkoutState = checkoutState;
             this.checkoutError = checkoutError;
+            this.requiresLogin = false;
         }
 
-        public static CartUIState loading() {
-            return new CartUIState(null, true, null, null, null);
+        public List<CartItemWithProduct> getItems() {
+            return items;
         }
 
-        public CartUIState copy(
-            boolean isLoading,
-            String error,
-            CheckoutState checkoutState,
-            String checkoutError
-        ) {
-            return new CartUIState(
-                this.cartState,
-                isLoading,
-                error,
-                checkoutState,
-                checkoutError
-            );
-        }
-
-        public CartState getCartState() {
-            return cartState;
+        public float getTotal() {
+            return total;
         }
 
         public boolean isLoading() {
@@ -180,6 +208,10 @@ public class CartViewModel extends ViewModel {
             return error;
         }
 
+        public boolean isEmpty() {
+            return isEmpty;
+        }
+
         public CheckoutState getCheckoutState() {
             return checkoutState;
         }
@@ -188,16 +220,8 @@ public class CartViewModel extends ViewModel {
             return checkoutError;
         }
 
-        public boolean isEmpty() {
-            return cartState == null || cartState.isEmpty();
-        }
-
-        public float getTotal() {
-            return cartState != null ? cartState.getTotal() : 0f;
-        }
-
-        public int getItemCount() {
-            return cartState != null ? cartState.getItemCount() : 0;
+        public boolean requiresLogin() {
+            return requiresLogin;
         }
     }
 }
