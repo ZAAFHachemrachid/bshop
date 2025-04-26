@@ -1,8 +1,6 @@
 package com.example.b_shop.data.repositories;
 
-import android.app.Application;
 import androidx.lifecycle.LiveData;
-import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.dao.UserDao;
 import com.example.b_shop.data.local.entities.User;
 import com.example.b_shop.data.local.entities.Order;
@@ -11,7 +9,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 public class UserRepository {
@@ -19,10 +16,9 @@ public class UserRepository {
     private final ExecutorService executorService;
     private User currentUser;
 
-    public UserRepository(Application application) {
-        AppDatabase database = AppDatabase.getInstance(application);
-        userDao = database.userDao();
-        executorService = Executors.newSingleThreadExecutor();
+    public UserRepository(UserDao userDao) {
+        this.userDao = userDao;
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     // Authentication methods

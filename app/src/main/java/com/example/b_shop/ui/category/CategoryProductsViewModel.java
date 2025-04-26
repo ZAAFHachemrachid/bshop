@@ -1,19 +1,17 @@
 package com.example.b_shop.ui.category;
 
-import android.app.Application;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
-
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import com.example.b_shop.data.local.entities.Category;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.repositories.CategoryRepository;
 import com.example.b_shop.data.repositories.ProductRepository;
-
 import java.util.List;
 
-public class CategoryProductsViewModel extends AndroidViewModel {
+public class CategoryProductsViewModel extends ViewModel {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final MutableLiveData<Integer> categoryId = new MutableLiveData<>();
@@ -22,10 +20,9 @@ public class CategoryProductsViewModel extends AndroidViewModel {
     private final LiveData<List<Product>> products;
     private final LiveData<String> categoryName;
 
-    public CategoryProductsViewModel(Application application) {
-        super(application);
-        productRepository = new ProductRepository(application);
-        categoryRepository = new CategoryRepository(application);
+    private CategoryProductsViewModel(ProductRepository productRepository, CategoryRepository categoryRepository) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
 
         // Transform categoryId into products list
         products = Transformations.switchMap(categoryId, 
@@ -62,5 +59,25 @@ public class CategoryProductsViewModel extends AndroidViewModel {
         super.onCleared();
         productRepository.cleanup();
         categoryRepository.cleanup();
+    }
+
+    // ViewModel Factory
+    public static class Factory implements ViewModelProvider.Factory {
+        private final ProductRepository productRepository;
+        private final CategoryRepository categoryRepository;
+
+        public Factory(ProductRepository productRepository, CategoryRepository categoryRepository) {
+            this.productRepository = productRepository;
+            this.categoryRepository = categoryRepository;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T extends ViewModel> T create(Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(CategoryProductsViewModel.class)) {
+                return (T) new CategoryProductsViewModel(productRepository, categoryRepository);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
     }
 }

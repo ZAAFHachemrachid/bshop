@@ -4,6 +4,7 @@ import android.app.Application;
 import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.DatabaseInitializer;
 import com.example.b_shop.data.repositories.*;
+import com.example.b_shop.data.local.dao.*;
 
 public class BShopApplication extends Application {
     private AppDatabase database;
@@ -20,12 +21,19 @@ public class BShopApplication extends Application {
         // Initialize database
         database = AppDatabase.getInstance(this);
         
-        // Initialize repositories
-        categoryRepository = new CategoryRepository(this);
-        productRepository = new ProductRepository(this);
-        userRepository = new UserRepository(this);
-        orderRepository = new OrderRepository(this);
-        reviewRepository = new ReviewRepository(this);
+        // Get DAOs
+        CategoryDao categoryDao = database.categoryDao();
+        ProductDao productDao = database.productDao();
+        UserDao userDao = database.userDao();
+        OrderDao orderDao = database.orderDao();
+        ReviewDao reviewDao = database.reviewDao();
+
+        // Initialize repositories with DAOs
+        categoryRepository = new CategoryRepository(categoryDao);
+        productRepository = new ProductRepository(productDao, userDao);
+        userRepository = new UserRepository(userDao);
+        orderRepository = new OrderRepository(orderDao);
+        reviewRepository = new ReviewRepository(reviewDao, userDao, productDao);
 
         // Initialize database with sample data
         DatabaseInitializer.populateAsync(this);
@@ -55,12 +63,6 @@ public class BShopApplication extends Application {
     @Override
     public void onTerminate() {
         super.onTerminate();
-        
-        // Cleanup repositories
-        if (categoryRepository != null) categoryRepository.cleanup();
-        if (productRepository != null) productRepository.cleanup();
-        if (userRepository != null) userRepository.cleanup();
-        if (orderRepository != null) orderRepository.cleanup();
-        if (reviewRepository != null) reviewRepository.cleanup();
+        // Cleanup is now handled by ViewModels
     }
 }

@@ -4,17 +4,21 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
-import androidx.recyclerview.widget.GridLayoutManager;
-
 import com.example.b_shop.R;
+import com.example.b_shop.data.local.AppDatabase;
+import com.example.b_shop.data.repositories.CategoryRepository;
+import com.example.b_shop.data.repositories.ProductRepository;
 import com.example.b_shop.databinding.FragmentCategoryListBinding;
 import com.example.b_shop.ui.adapters.CategoryAdapter;
+import com.example.b_shop.ui.adapters.CategoryProductsAdapter;
+import com.example.b_shop.data.local.entities.Category;
+import com.example.b_shop.data.local.entities.Product;
 
 public class CategoryListFragment extends Fragment {
     
@@ -33,32 +37,82 @@ public class CategoryListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
-        viewModel = new ViewModelProvider(this).get(CategoryListViewModel.class);
+        setupViewModel();
         setupRecyclerView();
+        setupSearchView();
         observeViewModel();
     }
 
-    private void setupRecyclerView() {
-        categoryAdapter = new CategoryAdapter(category -> {
-            Bundle args = new Bundle();
-            args.putInt("categoryId", category.getCategoryId());
-            Navigation.findNavController(requireView())
-                    .navigate(R.id.action_categories_to_products, args);
-        });
+    private void setupViewModel() {
+        AppDatabase database = AppDatabase.getInstance(requireContext());
+        CategoryRepository categoryRepository = new CategoryRepository(database.categoryDao());
+        ProductRepository productRepository = new ProductRepository(database.productDao(), database.userDao());
         
-        binding.categoriesGrid.setAdapter(categoryAdapter);
-        binding.categoriesGrid.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        CategoryListViewModel.Factory factory = new CategoryListViewModel.Factory(
+            categoryRepository, productRepository);
+        
+        viewModel = new ViewModelProvider(this, factory).get(CategoryListViewModel.class);
+    }
+
+    private void setupRecyclerView() {
+        categoryAdapter = new CategoryAdapter(
+            // Category click listener
+            category -> {
+                Bundle args = new Bundle();
+                args.putInt("categoryId", category.getCategoryId());
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_categories_to_products, args);
+            },
+            // Product click listener
+            product -> {
+                Bundle args = new Bundle();
+                args.putInt("productId", product.getProductId());
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_categories_to_product_details, args);
+            }
+        );
+        
+        binding.categoriesList.setAdapter(categoryAdapter);
+    }
+
+    private void setupSearchView() {
+        binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                viewModel.setSearchQuery(newText);
+                return true;
+            }
+        });
     }
 
     private void observeViewModel() {
         viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
             categoryAdapter.submitList(categories);
-            binding.progressBar.setVisibility(View.GONE);
+            loadProductsForCategories(categories);
+            updateEmptyState(categories);
         });
 
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         });
+    }
+
+    private void loadProductsForCategories(java.util.List<Category> categories) {
+        for (Category category : categories) {
+            viewModel.getProductsForCategory(category.getCategoryId())
+                    .observe(getViewLifecycleOwner(), products -> 
+                        categoryAdapter.setProductsForCategory(category.getCategoryId(), products));
+        }
+    }
+
+    private void updateEmptyState(java.util.List<Category> categories) {
+        binding.emptyView.setVisibility(
+            categories != null && categories.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     @Override

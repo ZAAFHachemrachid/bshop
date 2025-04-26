@@ -4,6 +4,7 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.entities.Category;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.repositories.CategoryRepository;
@@ -20,32 +21,20 @@ public class HomeViewModel extends AndroidViewModel {
 
     public HomeViewModel(Application application) {
         super(application);
-        categoryRepository = new CategoryRepository(application);
-        productRepository = new ProductRepository(application);
+        AppDatabase database = AppDatabase.getInstance(application);
+        categoryRepository = new CategoryRepository(database.categoryDao());
+        productRepository = new ProductRepository(database.productDao(), database.userDao());
         executorService = Executors.newSingleThreadExecutor();
         isRefreshing = new MutableLiveData<>(false);
-        loadInitialData();
-    }
-
-    private void loadInitialData() {
-        // Initial data load
-        executorService.execute(() -> {
-            // Load data from repositories
-            categoryRepository.refreshCategories();
-            productRepository.refreshFeaturedProducts();
-            productRepository.refreshTopRatedProducts();
-        });
     }
 
     public void refreshData() {
         isRefreshing.setValue(true);
         executorService.execute(() -> {
             try {
-                // Refresh all data
-                categoryRepository.refreshCategories();
-                productRepository.refreshFeaturedProducts();
-                productRepository.refreshTopRatedProducts();
-            } finally {
+                // Refresh logic if needed
+                isRefreshing.postValue(false);
+            } catch (Exception e) {
                 isRefreshing.postValue(false);
             }
         });

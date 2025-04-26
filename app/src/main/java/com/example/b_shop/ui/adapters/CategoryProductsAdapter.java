@@ -2,26 +2,22 @@ package com.example.b_shop.ui.adapters;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import com.example.b_shop.R;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
+import com.example.b_shop.R;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.databinding.ItemProductBinding;
-import java.text.NumberFormat;
-import java.util.Locale;
 
-public class ProductAdapter extends ListAdapter<Product, ProductAdapter.ProductViewHolder> {
+public class CategoryProductsAdapter extends ListAdapter<Product, CategoryProductsAdapter.ProductViewHolder> {
 
     private final OnProductClickListener listener;
-    private final NumberFormat currencyFormat;
 
-    public ProductAdapter(OnProductClickListener listener) {
+    public CategoryProductsAdapter(OnProductClickListener listener) {
         super(new ProductDiffCallback());
         this.listener = listener;
-        this.currencyFormat = NumberFormat.getCurrencyInstance(Locale.US);
     }
 
     @NonNull
@@ -47,12 +43,9 @@ public class ProductAdapter extends ListAdapter<Product, ProductAdapter.ProductV
         }
 
         void bind(Product product) {
-            // Set product name
             binding.productName.setText(product.getName());
+            binding.productPrice.setText(String.format("$%.2f", product.getPrice()));
             
-            // Set product price
-            binding.productPrice.setText(currencyFormat.format(product.getPrice()));
-
             // Load product image using Picasso
             String imagePath = product.getImagePath();
             if (imagePath != null && !imagePath.isEmpty()) {
@@ -66,7 +59,6 @@ public class ProductAdapter extends ListAdapter<Product, ProductAdapter.ProductV
                 binding.productImage.setImageResource(R.drawable.ic_product_placeholder);
             }
 
-            // Set click listener
             binding.getRoot().setOnClickListener(v -> listener.onProductClick(product));
         }
     }

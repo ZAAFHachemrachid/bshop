@@ -1,10 +1,9 @@
 package com.example.b_shop.data.repositories;
 
-import android.app.Application;
 import androidx.lifecycle.LiveData;
-import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.dao.ReviewDao;
 import com.example.b_shop.data.local.dao.UserDao;
+import com.example.b_shop.data.local.dao.ProductDao;
 import com.example.b_shop.data.local.entities.Review;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -17,12 +16,11 @@ public class ReviewRepository {
     private final ProductRepository productRepository;
     private final ExecutorService executorService;
 
-    public ReviewRepository(Application application) {
-        AppDatabase database = AppDatabase.getInstance(application);
-        reviewDao = database.reviewDao();
-        userDao = database.userDao();
-        productRepository = new ProductRepository(application);
-        executorService = Executors.newSingleThreadExecutor();
+    public ReviewRepository(ReviewDao reviewDao, UserDao userDao, ProductDao productDao) {
+        this.reviewDao = reviewDao;
+        this.userDao = userDao;
+        this.productRepository = new ProductRepository(productDao, userDao);
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     // Basic CRUD operations

@@ -1,9 +1,8 @@
 package com.example.b_shop.data.repositories;
 
-import android.app.Application;
 import androidx.lifecycle.LiveData;
-import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.dao.CategoryDao;
+import com.example.b_shop.data.local.dao.CategoryDao.CategoryWithProductCount;
 import com.example.b_shop.data.local.entities.Category;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -13,20 +12,9 @@ public class CategoryRepository {
     private final CategoryDao categoryDao;
     private final ExecutorService executorService;
 
-    public CategoryRepository(Application application) {
-        AppDatabase database = AppDatabase.getInstance(application);
-        categoryDao = database.categoryDao();
-        executorService = Executors.newSingleThreadExecutor();
-    }
-
-    public void refreshCategories() {
-        // For local-only implementation, this method ensures data consistency
-        // by reloading from Room database
-        executorService.execute(() -> {
-            // The actual refresh just triggers Room to reload from disk
-            // This will cause LiveData observers to receive updates
-            categoryDao.getAllCategories();
-        });
+    public CategoryRepository(CategoryDao categoryDao) {
+        this.categoryDao = categoryDao;
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     public LiveData<List<Category>> getAllCategories() {
@@ -38,32 +26,13 @@ public class CategoryRepository {
     }
 
     public LiveData<List<Category>> searchCategories(String query) {
-        return categoryDao.searchCategories("%" + query + "%");
+        return categoryDao.searchCategories(query);
     }
 
-    public LiveData<List<CategoryDao.CategoryWithProductCount>> getCategoriesWithProductCount() {
+    public LiveData<List<CategoryWithProductCount>> getCategoriesWithProductCount() {
         return categoryDao.getCategoriesWithProductCount();
     }
 
-    public void insert(Category category) {
-        executorService.execute(() -> {
-            categoryDao.insert(category);
-        });
-    }
-
-    public void update(Category category) {
-        executorService.execute(() -> {
-            categoryDao.update(category);
-        });
-    }
-
-    public void delete(Category category) {
-        executorService.execute(() -> {
-            categoryDao.delete(category);
-        });
-    }
-
-    // Cleanup method to be called when repository is no longer needed
     public void cleanup() {
         executorService.shutdown();
     }

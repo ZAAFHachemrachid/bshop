@@ -2,79 +2,72 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph_main"
-    app:startDestination="@id/navigation_home">
+    app:startDestination="@id/homeFragment">
 
     <fragment
-        android:id="@+id/navigation_home"
+        android:id="@+id/homeFragment"
         android:name="com.example.b_shop.ui.home.HomeFragment"
-        android:label="Home">
+        android:label="@string/home">
         <action
             android:id="@+id/action_home_to_product_details"
-            app:destination="@id/navigation_product_details" />
+            app:destination="@id/productDetailsFragment" />
         <action
-            android:id="@+id/action_home_to_category_products"
-            app:destination="@id/navigation_category_products" />
+            android:id="@+id/action_home_to_category_list"
+            app:destination="@id/categoryListFragment" />
+        <action
+            android:id="@+id/action_home_to_cart"
+            app:destination="@id/cartFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_categories"
+        android:id="@+id/categoryListFragment"
         android:name="com.example.b_shop.ui.category.CategoryListFragment"
-        android:label="Categories">
+        android:label="@string/categories">
         <action
-            android:id="@+id/action_categories_to_products"
-            app:destination="@id/navigation_category_products" />
+            android:id="@+id/action_category_list_to_category_products"
+            app:destination="@id/categoryProductsFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_category_products"
+        android:id="@+id/categoryProductsFragment"
         android:name="com.example.b_shop.ui.category.CategoryProductsFragment"
-        android:label="Category Products">
+        android:label="{categoryName}">
         <argument
             android:name="categoryId"
             app:argType="integer" />
+        <argument
+            android:name="categoryName"
+            app:argType="string" />
         <action
             android:id="@+id/action_category_products_to_product_details"
-            app:destination="@id/navigation_product_details" />
+            app:destination="@id/productDetailsFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_search"
-        android:name="com.example.b_shop.ui.search.SearchFragment"
-        android:label="Search">
-        <action
-            android:id="@+id/action_search_to_product_details"
-            app:destination="@id/navigation_product_details" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/navigation_cart"
-        android:name="com.example.b_shop.ui.cart.CartFragment"
-        android:label="Cart">
-        <action
-            android:id="@+id/action_cart_to_checkout"
-            app:destination="@id/navigation_checkout" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/navigation_profile"
-        android:name="com.example.b_shop.ui.profile.ProfileFragment"
-        android:label="Profile" />
-
-    <fragment
-        android:id="@+id/navigation_product_details"
+        android:id="@+id/productDetailsFragment"
         android:name="com.example.b_shop.ui.product.ProductDetailsFragment"
-        android:label="Product Details">
+        android:label="@string/product_details">
         <argument
             android:name="productId"
             app:argType="integer" />
         <action
             android:id="@+id/action_product_details_to_cart"
-            app:destination="@id/navigation_cart" />
+            app:destination="@id/cartFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_checkout"
-        android:name="com.example.b_shop.ui.cart.CheckoutFragment"
-        android:label="Checkout" />
+        android:id="@+id/cartFragment"
+        android:name="com.example.b_shop.ui.cart.CartFragment"
+        android:label="@string/cart">
+        <action
+            android:id="@+id/action_cart_to_checkout"
+            app:destination="@id/checkoutFragment" />
+    </fragment>
+
+    <!-- Placeholder for future checkout implementation -->
+    <fragment
+        android:id="@+id/checkoutFragment"
+        android:name="com.example.b_shop.ui.checkout.CheckoutFragment"
+        android:label="@string/checkout" />
 
 </navigation>

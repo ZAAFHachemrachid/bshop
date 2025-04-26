@@ -1,8 +1,6 @@
 package com.example.b_shop.data.repositories;
 
-import android.app.Application;
 import androidx.lifecycle.LiveData;
-import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.dao.ProductDao;
 import com.example.b_shop.data.local.dao.UserDao;
 import com.example.b_shop.data.local.entities.Product;
@@ -14,48 +12,14 @@ public class ProductRepository {
     private final ProductDao productDao;
     private final UserDao userDao;
     private final ExecutorService executorService;
-    private final int currentUserId; // TODO: Get from UserManager/Session
+    private final int currentUserId = 1; // TODO: Get from UserManager/Session
 
-    public ProductRepository(Application application) {
-        AppDatabase database = AppDatabase.getInstance(application);
-        productDao = database.productDao();
-        userDao = database.userDao();
-        executorService = Executors.newSingleThreadExecutor();
-        currentUserId = 1; // TODO: Get from UserManager/Session
+    public ProductRepository(ProductDao productDao, UserDao userDao) {
+        this.productDao = productDao;
+        this.userDao = userDao;
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
-    public void refreshFeaturedProducts() {
-        executorService.execute(() -> {
-            productDao.getTopRatedProducts(5);
-        });
-    }
-
-    public void refreshTopRatedProducts() {
-        executorService.execute(() -> {
-            productDao.getTopRatedProducts(10);
-        });
-    }
-
-    // Basic CRUD operations
-    public void insert(Product product) {
-        executorService.execute(() -> {
-            productDao.insert(product);
-        });
-    }
-
-    public void update(Product product) {
-        executorService.execute(() -> {
-            productDao.update(product);
-        });
-    }
-
-    public void delete(Product product) {
-        executorService.execute(() -> {
-            productDao.delete(product);
-        });
-    }
-
-    // Query methods
     public LiveData<List<Product>> getAllProducts() {
         return productDao.getAllProducts();
     }
@@ -64,7 +28,6 @@ public class ProductRepository {
         return productDao.getProductById(productId);
     }
 
-    // New method: Get product synchronously
     public Product getProduct(int productId) throws Exception {
         return productDao.getProductSync(productId);
     }
@@ -81,10 +44,6 @@ public class ProductRepository {
         return productDao.getProductsByPriceRange(minPrice, maxPrice);
     }
 
-    public LiveData<List<Product>> getAvailableProducts() {
-        return productDao.getAvailableProducts();
-    }
-
     public LiveData<List<Product>> getTopRatedProducts(int limit) {
         return productDao.getTopRatedProducts(limit);
     }
@@ -95,69 +54,37 @@ public class ProductRepository {
     }
 
     public void setProductFavorite(int productId, boolean isFavorite) throws Exception {
-        if (isFavorite) {
-            userDao.addToFavorites(currentUserId, productId);
-        } else {
-            userDao.removeFromFavorites(currentUserId, productId);
-        }
+        executorService.execute(() -> {
+            try {
+                if (isFavorite) {
+                    userDao.addToFavorites(currentUserId, productId);
+                } else {
+                    userDao.removeFromFavorites(currentUserId, productId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // Cart management
     public void addToCart(int productId, int quantity) throws Exception {
-        userDao.addToCart(currentUserId, productId, quantity);
-    }
-
-    public void removeFromCart(int productId) throws Exception {
-        userDao.removeFromCart(currentUserId, productId);
-    }
-
-    public void updateCartQuantity(int productId, int quantity) throws Exception {
-        userDao.updateCartQuantity(currentUserId, productId, quantity);
-    }
-
-    // Stock management
-    public void decreaseStock(int productId, int quantity) {
         executorService.execute(() -> {
-            productDao.decreaseStock(productId, quantity);
+            try {
+                userDao.addToCart(currentUserId, productId, quantity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 
-    // Rating management
     public void updateProductRating(int productId) {
         executorService.execute(() -> {
             productDao.updateProductRating(productId);
         });
     }
 
-    // Cleanup
     public void cleanup() {
         executorService.shutdown();
-    }
-
-    // Helper method for filtering and sorting
-    public LiveData<List<Product>> getFilteredAndSortedProducts(
-            Integer categoryId,
-            Float minPrice,
-            Float maxPrice,
-            Boolean inStockOnly,
-            String sortBy) {
-        
-        if (categoryId != null) {
-            return productDao.getProductsByCategory(categoryId);
-        }
-        
-        if (minPrice != null && maxPrice != null) {
-            return productDao.getProductsByPriceRange(minPrice, maxPrice);
-        }
-        
-        if (inStockOnly != null && inStockOnly) {
-            return productDao.getAvailableProducts();
-        }
-
-        if ("rating".equals(sortBy)) {
-            return productDao.getTopRatedProducts(Integer.MAX_VALUE);
-        }
-
-        return productDao.getAllProducts();
     }
 }

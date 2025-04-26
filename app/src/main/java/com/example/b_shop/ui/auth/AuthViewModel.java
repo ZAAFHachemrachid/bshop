@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
+import com.example.b_shop.data.local.AppDatabase;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -24,7 +25,8 @@ public class AuthViewModel extends AndroidViewModel {
 
     public AuthViewModel(@NonNull Application application) {
         super(application);
-        userRepository = new UserRepository(application);
+        AppDatabase database = AppDatabase.getInstance(application);
+        userRepository = new UserRepository(database.userDao());
         preferences = PreferenceManager.getDefaultSharedPreferences(application);
     }
 

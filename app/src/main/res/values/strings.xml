@@ -1,3 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">b-shop</string>
+    <!-- General -->
+    <string name="app_name">B-Shop</string>
+    <string name="home">Home</string>
+    <string name="categories">Categories</string>
+    <string name="product_details">Product Details</string>
+
+    <!-- Cart -->
+    <string name="cart">Cart</string>
+    <string name="cart_empty">Your Cart is Empty</string>
+    <string name="cart_empty_message">Looks like you haven\'t added anything to your cart yet</string>
+    <string name="browse_products">Browse Products</string>
+    <string name="total">Total</string>
+    <string name="checkout">Checkout</string>
+    <string name="clear_cart">Clear Cart</string>
+    <string name="clear_cart_title">Clear Cart?</string>
+    <string name="clear_cart_message">Are you sure you want to remove all items from your cart?</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove_from_cart">Remove from cart</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
+    <string name="checkout_success_title">Order Placed Successfully!</string>
+    <string name="checkout_success_message">Your order has been placed successfully and will be processed shortly.</string>
+    <string name="view_orders">View Orders</string>
+    <string name="continue_shopping">Continue Shopping</string>
 </resources>

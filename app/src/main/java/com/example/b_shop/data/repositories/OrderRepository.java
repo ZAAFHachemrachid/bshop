@@ -1,8 +1,6 @@
 package com.example.b_shop.data.repositories;
 
-import android.app.Application;
 import androidx.lifecycle.LiveData;
-import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.dao.OrderDao;
 import com.example.b_shop.data.local.entities.Order;
 import com.example.b_shop.data.local.entities.OrderItem;
@@ -15,10 +13,9 @@ public class OrderRepository {
     private final OrderDao orderDao;
     private final ExecutorService executorService;
 
-    public OrderRepository(Application application) {
-        AppDatabase database = AppDatabase.getInstance(application);
-        orderDao = database.orderDao();
-        executorService = Executors.newSingleThreadExecutor();
+    public OrderRepository(OrderDao orderDao) {
+        this.orderDao = orderDao;
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     // Cart operations

@@ -1,9 +1,9 @@
 package com.example.b_shop.ui.product;
 
-import android.app.Application;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.local.entities.Review;
 import com.example.b_shop.data.repositories.ProductRepository;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ProductDetailsViewModel extends AndroidViewModel {
+public class ProductDetailsViewModel extends ViewModel {
     
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
@@ -26,11 +26,10 @@ public class ProductDetailsViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> addToCartSuccess = new MutableLiveData<>();
     private final MutableLiveData<Integer> currentImagePosition = new MutableLiveData<>();
 
-    public ProductDetailsViewModel(Application application) {
-        super(application);
-        productRepository = new ProductRepository(application);
-        reviewRepository = new ReviewRepository(application);
-        executorService = Executors.newSingleThreadExecutor();
+    private ProductDetailsViewModel(ProductRepository productRepository, ReviewRepository reviewRepository) {
+        this.productRepository = productRepository;
+        this.reviewRepository = reviewRepository;
+        this.executorService = Executors.newSingleThreadExecutor();
         currentImagePosition.setValue(0);
     }
 
@@ -125,5 +124,27 @@ public class ProductDetailsViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
         executorService.shutdown();
+        productRepository.cleanup();
+        reviewRepository.cleanup();
+    }
+
+    // ViewModel Factory
+    public static class Factory implements ViewModelProvider.Factory {
+        private final ProductRepository productRepository;
+        private final ReviewRepository reviewRepository;
+
+        public Factory(ProductRepository productRepository, ReviewRepository reviewRepository) {
+            this.productRepository = productRepository;
+            this.reviewRepository = reviewRepository;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T extends ViewModel> T create(Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(ProductDetailsViewModel.class)) {
+                return (T) new ProductDetailsViewModel(productRepository, reviewRepository);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
     }
 }
