@@ -11,18 +11,17 @@ import androidx.room.Update;
 
 import com.example.b_shop.data.local.entities.CartItem;
 import com.example.b_shop.data.local.entities.Product;
+import com.example.b_shop.data.local.relations.CartItemWithProduct;
 
 import java.util.List;
 
 @Dao
 public interface CartDao {
-    @Query("SELECT * FROM cart_items WHERE userId = :userId")
+    @Query("SELECT * FROM cart_items WHERE userId = :userId ORDER BY addedAt DESC")
     LiveData<List<CartItem>> getCartItems(int userId);
 
-    @Query("SELECT ci.*, p.name as productName, p.image_path as productImage " +
-           "FROM cart_items ci " +
-           "INNER JOIN products p ON ci.productId = p.productId " +
-           "WHERE ci.userId = :userId")
+    @Transaction
+    @Query("SELECT * FROM cart_items WHERE userId = :userId ORDER BY addedAt DESC")
     LiveData<List<CartItemWithProduct>> getCartItemsWithProduct(int userId);
 
     @Query("SELECT COUNT(*) FROM cart_items WHERE userId = :userId")
@@ -52,16 +51,6 @@ public interface CartDao {
     @Query("UPDATE cart_items SET quantity = :quantity WHERE cartItemId = :cartItemId AND userId = :userId")
     void updateQuantity(int cartItemId, int userId, int quantity);
 
-    // Composite data class for cart items with product details
-    public static class CartItemWithProduct {
-        public CartItem cartItem;
-        public String productName;
-        public String productImage;
-        
-        public float getTotalPrice() {
-            return cartItem.getQuantity() * cartItem.getItemPrice();
-        }
-    }
 
     // Transaction to check if adding to cart would exceed available stock
     @Transaction

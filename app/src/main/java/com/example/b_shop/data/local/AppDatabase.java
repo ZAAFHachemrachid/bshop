@@ -21,12 +21,12 @@ import com.example.b_shop.data.local.entities.*;
         UserFavorite.class,
         CartItem.class
     },
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters({
-    DateConverter.class,
-    StringListConverter.class
+    StringListConverter.class,
+    DateConverter.class
 })
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "bshop_db";
@@ -38,6 +38,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract UserDao userDao();
     public abstract ReviewDao reviewDao();
     public abstract OrderDao orderDao();
+    public abstract CartDao cartDao();
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {

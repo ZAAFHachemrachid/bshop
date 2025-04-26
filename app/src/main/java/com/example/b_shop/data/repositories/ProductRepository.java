@@ -84,6 +84,19 @@ public class ProductRepository {
         });
     }
 
+    public void updateStock(int productId, int quantityChange) {
+        executorService.execute(() -> {
+            try {
+                // If quantityChange is negative, we're decreasing stock
+                // If quantityChange is positive, we're increasing stock
+                // decreaseStock method decreases by the amount passed, so we negate positive quantityChange
+                productDao.decreaseStock(productId, -quantityChange);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public void cleanup() {
         executorService.shutdown();
     }

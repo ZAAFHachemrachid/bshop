@@ -2,10 +2,10 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph_main"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/navigation_home">
 
     <fragment
-        android:id="@+id/homeFragment"
+        android:id="@+id/navigation_home"
         android:name="com.example.b_shop.ui.home.HomeFragment"
         android:label="@string/home">
         <action
@@ -13,14 +13,14 @@
             app:destination="@id/productDetailsFragment" />
         <action
             android:id="@+id/action_home_to_category_list"
-            app:destination="@id/categoryListFragment" />
+            app:destination="@id/navigation_categories" />
         <action
             android:id="@+id/action_home_to_cart"
-            app:destination="@id/cartFragment" />
+            app:destination="@id/navigation_cart" />
     </fragment>
 
     <fragment
-        android:id="@+id/categoryListFragment"
+        android:id="@+id/navigation_categories"
         android:name="com.example.b_shop.ui.category.CategoryListFragment"
         android:label="@string/categories">
         <action
@@ -52,11 +52,11 @@
             app:argType="integer" />
         <action
             android:id="@+id/action_product_details_to_cart"
-            app:destination="@id/cartFragment" />
+            app:destination="@id/navigation_cart" />
     </fragment>
 
     <fragment
-        android:id="@+id/cartFragment"
+        android:id="@+id/navigation_cart"
         android:name="com.example.b_shop.ui.cart.CartFragment"
         android:label="@string/cart">
         <action

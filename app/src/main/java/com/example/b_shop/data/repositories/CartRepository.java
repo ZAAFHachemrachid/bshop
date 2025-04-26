@@ -2,7 +2,7 @@ package com.example.b_shop.data.repositories;
 
 import androidx.lifecycle.LiveData;
 import com.example.b_shop.data.local.dao.CartDao;
-import com.example.b_shop.data.local.dao.CartDao.CartItemWithProduct;
+import com.example.b_shop.data.local.relations.CartItemWithProduct;
 import com.example.b_shop.data.local.dao.ProductDao;
 import com.example.b_shop.data.local.entities.CartItem;
 import com.example.b_shop.data.local.entities.Product;

@@ -3,7 +3,7 @@ package com.example.b_shop.domain.usecases;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.b_shop.data.local.dao.CartDao.CartItemWithProduct;
+import com.example.b_shop.data.local.relations.CartItemWithProduct;
 import com.example.b_shop.data.local.entities.Order;
 import com.example.b_shop.data.local.entities.OrderItem;
 import com.example.b_shop.data.repositories.CartRepository;
@@ -118,7 +118,9 @@ public class CheckoutUseCase {
         List<OrderItem> orderItems = new ArrayList<>();
 
         for (CartItemWithProduct cartItem : cartItems) {
+            // Create OrderItem with temporary orderId (will be updated after order creation)
             OrderItem orderItem = new OrderItem(
+                -1, // temporary orderId
                 cartItem.cartItem.getProductId(),
                 cartItem.cartItem.getQuantity(),
                 cartItem.cartItem.getItemPrice()
@@ -129,17 +131,20 @@ public class CheckoutUseCase {
 
         Order order = new Order(
             userManager.getCurrentUserId(),
-            LocalDateTime.now(),
-            "PENDING",
             total
         );
 
-        long orderId = orderRepository.createOrder(order, orderItems);
-        if (orderId > 0) {
-            order.setOrderId((int) orderId);
-            return order;
+        try {
+            long orderId = orderRepository.createOrder(order, orderItems);
+            if (orderId > 0) {
+                order.setOrderId((int) orderId);
+                return order;
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     private void updateInventory(List<CartItemWithProduct> cartItems) {

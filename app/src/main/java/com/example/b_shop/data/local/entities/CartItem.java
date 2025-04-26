@@ -2,24 +2,30 @@ package com.example.b_shop.data.local.entities;
 
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
-import com.example.b_shop.data.local.converters.DateConverter;
-import java.time.LocalDateTime;
-
-@Entity(tableName = "cart_items",
-        foreignKeys = {
-            @ForeignKey(entity = User.class,
-                       parentColumns = "userId",
-                       childColumns = "userId",
-                       onDelete = ForeignKey.CASCADE),
-            @ForeignKey(entity = Product.class,
-                       parentColumns = "productId",
-                       childColumns = "productId",
-                       onDelete = ForeignKey.CASCADE)
-        })
-@TypeConverters(DateConverter.class)
+@Entity(
+    tableName = "cart_items",
+    foreignKeys = {
+        @ForeignKey(
+            entity = User.class,
+            parentColumns = "userId",
+            childColumns = "userId",
+            onDelete = ForeignKey.CASCADE
+        ),
+        @ForeignKey(
+            entity = Product.class,
+            parentColumns = "productId",
+            childColumns = "productId",
+            onDelete = ForeignKey.CASCADE
+        )
+    },
+    indices = {
+        @Index("userId"),
+        @Index("productId")
+    }
+)
 public class CartItem {
     @PrimaryKey(autoGenerate = true)
     private int cartItemId;
@@ -28,14 +34,14 @@ public class CartItem {
     private int productId;
     private int quantity;
     private float itemPrice;
-    private LocalDateTime addedAt;
+    private long addedAt;  // Timestamp in milliseconds
 
     public CartItem(int userId, int productId, int quantity, float itemPrice) {
         this.userId = userId;
         this.productId = productId;
         this.quantity = quantity;
         this.itemPrice = itemPrice;
-        this.addedAt = LocalDateTime.now();
+        this.addedAt = System.currentTimeMillis();
     }
 
     // Getters
@@ -59,7 +65,7 @@ public class CartItem {
         return itemPrice;
     }
 
-    public LocalDateTime getAddedAt() {
+    public long getAddedAt() {
         return addedAt;
     }
 
@@ -84,7 +90,7 @@ public class CartItem {
         this.itemPrice = itemPrice;
     }
 
-    public void setAddedAt(LocalDateTime addedAt) {
+    public void setAddedAt(long addedAt) {
         this.addedAt = addedAt;
     }
 

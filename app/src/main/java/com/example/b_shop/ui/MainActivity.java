@@ -37,12 +37,11 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(binding.bottomNav, navController);
 
             // Set up the ActionBar with the NavController
+            // Set up the ActionBar with the NavController, including only top-level destinations
             appBarConfiguration = new AppBarConfiguration.Builder(
                     R.id.navigation_home,
                     R.id.navigation_categories,
-                    R.id.navigation_search,
-                    R.id.navigation_cart,
-                    R.id.navigation_profile
+                    R.id.navigation_cart
             ).build();
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 

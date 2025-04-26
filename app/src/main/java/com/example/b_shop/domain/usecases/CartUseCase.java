@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Transformations;
 
-import com.example.b_shop.data.local.dao.CartDao.CartItemWithProduct;
+import com.example.b_shop.data.local.relations.CartItemWithProduct;
 import com.example.b_shop.data.repositories.CartRepository;
 import com.example.b_shop.data.repositories.ProductRepository;
 import com.example.b_shop.utils.UserManager;

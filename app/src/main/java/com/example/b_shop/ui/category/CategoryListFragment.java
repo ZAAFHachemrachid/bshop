@@ -60,15 +60,18 @@ public class CategoryListFragment extends Fragment {
             category -> {
                 Bundle args = new Bundle();
                 args.putInt("categoryId", category.getCategoryId());
+                args.putString("categoryName", category.getName());
                 Navigation.findNavController(requireView())
-                        .navigate(R.id.action_categories_to_products, args);
+                        .navigate(R.id.action_category_list_to_category_products, args);
             },
             // Product click listener
             product -> {
                 Bundle args = new Bundle();
-                args.putInt("productId", product.getProductId());
+                args.putInt("categoryId", product.getCategoryId());
+                args.putString("categoryName", "Products"); // Default category name
+                args.putInt("selectedProductId", product.getProductId());
                 Navigation.findNavController(requireView())
-                        .navigate(R.id.action_categories_to_product_details, args);
+                        .navigate(R.id.action_category_list_to_category_products, args);
             }
         );
         

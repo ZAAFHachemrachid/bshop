@@ -74,7 +74,7 @@ public class HomeFragment extends Fragment {
                 Bundle args = new Bundle();
                 args.putInt("categoryId", category.getCategoryId());
                 Navigation.findNavController(requireView())
-                        .navigate(R.id.action_home_to_category_products, args);
+                        .navigate(R.id.action_home_to_category_list, args);
             },
             // Product click listener
             product -> {

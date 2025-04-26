@@ -38,12 +38,23 @@ public class OrderRepository {
     }
 
     // Order management
-    public Future<Long> createOrder(Order order) {
-        return executorService.submit(() -> orderDao.insertOrder(order));
-    }
-
-    public Future<Long> addOrderItem(OrderItem item) {
-        return executorService.submit(() -> orderDao.insertOrderItem(item));
+    public long createOrder(Order order, List<OrderItem> items) throws Exception {
+        try {
+            return executorService.submit(() -> {
+                // Insert order first to get the orderId
+                long orderId = orderDao.insertOrder(order);
+                
+                // Update orderId in all items
+                for (OrderItem item : items) {
+                    item.setOrderId((int) orderId);
+                    orderDao.insertOrderItem(item);
+                }
+                
+                return orderId;
+            }).get();
+        } catch (Exception e) {
+            throw new Exception("Failed to create order: " + e.getMessage(), e);
+        }
     }
 
     public void updateOrder(Order order) {

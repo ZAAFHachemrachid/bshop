@@ -5,6 +5,8 @@
     <string name="home">Home</string>
     <string name="categories">Categories</string>
     <string name="product_details">Product Details</string>
+    <string name="category_image">Category image</string>
+    <string name="product_image">Product image</string>
 
     <!-- Cart -->
     <string name="cart">Cart</string>
