@@ -44,7 +44,9 @@ public class UserRepository {
             }
 
             String hashedPassword = hashPassword(password);
-            User newUser = new User(email, name, phone, hashedPassword);
+            User newUser = new User(name, email, hashedPassword);
+            newUser.setPhone(phone); // Set phone number after creation
+            
             long userId = userDao.insert(newUser);
             return userId > 0;
         });

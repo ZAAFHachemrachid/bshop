@@ -60,12 +60,21 @@ public class ReviewRepository {
         return reviewDao.getReviewsForProduct(productId);
     }
 
-    // New method: Get reviews synchronously
     public List<Review> getProductReviews(int productId) throws Exception {
-        return reviewDao.getProductReviewsSync(productId);
+        List<Review> reviews = reviewDao.getProductReviewsSync(productId);
+        
+        // Load user info for each review
+        for (Review review : reviews) {
+            String reviewerName = userDao.getUserNameSync(review.getUserId());
+            String reviewerAvatarUrl = userDao.getUserAvatarUrlSync(review.getUserId());
+            review.setReviewerName(reviewerName);
+            review.setReviewerAvatarUrl(reviewerAvatarUrl);
+        }
+        
+        return reviews;
     }
 
-    public LiveData<List<ReviewDao.ReviewWithUser>> getReviewsWithUserForProduct(int productId) {
+    public LiveData<List<ReviewDao.ReviewWithProduct>> getReviewsWithProduct(int productId) {
         return reviewDao.getReviewsWithUserForProduct(productId);
     }
 
@@ -103,15 +112,6 @@ public class ReviewRepository {
         return comment != null && 
                comment.length() >= 10 && 
                comment.length() <= 500;
-    }
-
-    // User info methods for reviews
-    public String getUserName(int userId) throws Exception {
-        return userDao.getUserNameSync(userId);
-    }
-
-    public String getUserAvatarUrl(int userId) throws Exception {
-        return userDao.getUserAvatarUrlSync(userId);
     }
 
     // Cleanup

@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+import com.example.b_shop.data.local.converters.StringListConverter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +30,8 @@ public class Product {
     private int stock;
     private float rating;
     private int reviewCount;
+    
+    @TypeConverters(StringListConverter.class)
     private List<String> images;
 
     public Product(String name, String description, float price, 
@@ -38,7 +42,7 @@ public class Product {
         this.categoryId = categoryId;
         this.imagePath = imagePath;
         this.stock = stock;
-        this.rating = 0.0f; // Default rating
+        this.rating = 0.0f;
         this.reviewCount = 0;
         this.images = new ArrayList<>();
         if (imagePath != null) {

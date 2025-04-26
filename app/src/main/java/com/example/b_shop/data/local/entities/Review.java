@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+import com.example.b_shop.data.local.converters.StringListConverter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,8 +40,10 @@ public class Review {
     private int rating;
     private String comment;
     private Date createdAt;
-    private String userName;
-    private String userAvatarUrl;
+    private String reviewerName;
+    private String reviewerAvatarUrl;
+    
+    @TypeConverters(StringListConverter.class)
     private List<String> images;
 
     public Review(int userId, int productId, int rating, String comment) {
@@ -73,19 +77,19 @@ public class Review {
     }
 
     public String getContent() {
-        return comment; // Alias for getComment()
+        return comment;
     }
 
     public Date getCreatedAt() {
         return createdAt;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getReviewerName() {
+        return reviewerName;
     }
 
-    public String getUserAvatarUrl() {
-        return userAvatarUrl;
+    public String getReviewerAvatarUrl() {
+        return reviewerAvatarUrl;
     }
 
     public List<String> getImages() {
@@ -117,12 +121,12 @@ public class Review {
         this.createdAt = createdAt;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setReviewerName(String reviewerName) {
+        this.reviewerName = reviewerName;
     }
 
-    public void setUserAvatarUrl(String userAvatarUrl) {
-        this.userAvatarUrl = userAvatarUrl;
+    public void setReviewerAvatarUrl(String reviewerAvatarUrl) {
+        this.reviewerAvatarUrl = reviewerAvatarUrl;
     }
 
     public void setImages(List<String> images) {

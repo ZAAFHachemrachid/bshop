@@ -9,6 +9,7 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 import com.example.b_shop.data.local.entities.Review;
+import com.example.b_shop.data.local.entities.User;
 import java.util.List;
 
 @Dao
@@ -28,13 +29,22 @@ public interface ReviewDao {
     @Query("SELECT * FROM reviews WHERE productId = :productId ORDER BY createdAt DESC")
     LiveData<List<Review>> getReviewsForProduct(int productId);
 
+    // New synchronous method with user information
     @Transaction
-    @Query("SELECT r.*, u.name as userName " +
+    @Query("SELECT r.*, u.name as reviewerName, u.avatarUrl as reviewerAvatarUrl " +
            "FROM reviews r " +
            "INNER JOIN users u ON r.userId = u.userId " +
            "WHERE r.productId = :productId " +
            "ORDER BY r.createdAt DESC")
-    LiveData<List<ReviewWithUser>> getReviewsWithUserForProduct(int productId);
+    List<Review> getProductReviewsSync(int productId);
+
+    @Transaction
+    @Query("SELECT r.*, p.name as productName " +
+           "FROM reviews r " +
+           "INNER JOIN products p ON r.productId = p.productId " +
+           "WHERE r.productId = :productId " +
+           "ORDER BY r.createdAt DESC")
+    LiveData<List<ReviewWithProduct>> getReviewsWithUserForProduct(int productId);
 
     @Query("SELECT AVG(CAST(rating AS FLOAT)) FROM reviews WHERE productId = :productId")
     LiveData<Float> getAverageRatingForProduct(int productId);
@@ -55,10 +65,10 @@ public interface ReviewDao {
     LiveData<Integer> getReviewCountForProduct(int productId);
 
     // Static classes for complex queries
-    static class ReviewWithUser {
+    static class ReviewWithProduct {
         @Embedded
         public Review review;
-        public String userName;
+        public String productName;
     }
 
     static class RatingDistribution {

@@ -59,6 +59,33 @@ public interface UserDao {
            "WHERE u.userId = :userId")
     LiveData<UserActivity> getUserActivity(int userId);
 
+    // Favorites management
+    @Query("SELECT EXISTS(SELECT 1 FROM user_favorites WHERE userId = :userId AND productId = :productId)")
+    boolean isProductFavorite(int userId, int productId);
+
+    @Query("INSERT INTO user_favorites (userId, productId) VALUES (:userId, :productId)")
+    void addToFavorites(int userId, int productId);
+
+    @Query("DELETE FROM user_favorites WHERE userId = :userId AND productId = :productId")
+    void removeFromFavorites(int userId, int productId);
+
+    // Cart management
+    @Query("INSERT INTO cart_items (userId, productId, quantity) VALUES (:userId, :productId, :quantity)")
+    void addToCart(int userId, int productId, int quantity);
+
+    @Query("DELETE FROM cart_items WHERE userId = :userId AND productId = :productId")
+    void removeFromCart(int userId, int productId);
+
+    @Query("UPDATE cart_items SET quantity = :quantity WHERE userId = :userId AND productId = :productId")
+    void updateCartQuantity(int userId, int productId, int quantity);
+
+    // User info retrieval
+    @Query("SELECT name FROM users WHERE userId = :userId")
+    String getUserNameSync(int userId);
+
+    @Query("SELECT avatarUrl FROM users WHERE userId = :userId")
+    String getUserAvatarUrlSync(int userId);
+
     // Static classes for complex queries
     static class UserReviewWithProduct {
         @Embedded

@@ -1,25 +1,27 @@
 package com.example.b_shop.data.local.entities;
 
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
-import java.util.Date;
 
-@Entity(tableName = "users")
+@Entity(
+    tableName = "users",
+    indices = {@Index(value = {"email"}, unique = true)}
+)
 public class User {
     @PrimaryKey(autoGenerate = true)
     private int userId;
-    private String email;
     private String name;
+    private String email;
+    private String password;
+    private String avatarUrl;
     private String phone;
-    private String password; // Will be stored hashed
-    private Date createdAt;
+    private String address;
 
-    public User(String email, String name, String phone, String password) {
-        this.email = email;
+    public User(String name, String email, String password) {
         this.name = name;
-        this.phone = phone;
+        this.email = email;
         this.password = password;
-        this.createdAt = new Date();
     }
 
     // Getters
@@ -27,24 +29,28 @@ public class User {
         return userId;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
     public String getName() {
         return name;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     // Setters
@@ -52,23 +58,27 @@ public class User {
         this.userId = userId;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

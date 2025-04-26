@@ -57,7 +57,7 @@ public class ProductReviewAdapter extends ListAdapter<Review, ProductReviewAdapt
 
         void bind(Review review) {
             // Set user info
-            binding.userName.setText(review.getUserName());
+            binding.userName.setText(review.getReviewerName());
             binding.reviewDate.setText(dateFormat.format(review.getCreatedAt()));
 
             // Load user avatar
@@ -65,11 +65,11 @@ public class ProductReviewAdapter extends ListAdapter<Review, ProductReviewAdapt
                 currentTask.cancel(true);
             }
             currentTask = new ImageLoadTask(binding.userAvatar);
-            currentTask.execute(review.getUserAvatarUrl());
+            currentTask.execute(review.getReviewerAvatarUrl());
 
             // Set rating and review text
             binding.ratingBar.setRating(review.getRating());
-            binding.reviewText.setText(review.getContent());
+            binding.reviewText.setText(review.getComment());
 
             // Setup review images if any
             if (review.getImages() != null && !review.getImages().isEmpty()) {
@@ -129,7 +129,7 @@ public class ProductReviewAdapter extends ListAdapter<Review, ProductReviewAdapt
 
         @Override
         public boolean areContentsTheSame(@NonNull Review oldItem, @NonNull Review newItem) {
-            return oldItem.getContent().equals(newItem.getContent()) &&
+            return oldItem.getComment().equals(newItem.getComment()) &&
                    oldItem.getRating() == newItem.getRating() &&
                    oldItem.getCreatedAt().equals(newItem.getCreatedAt());
         }

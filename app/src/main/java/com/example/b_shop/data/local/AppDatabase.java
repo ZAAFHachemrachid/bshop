@@ -6,6 +6,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import com.example.b_shop.data.local.converters.DateConverter;
+import com.example.b_shop.data.local.converters.StringListConverter;
 import com.example.b_shop.data.local.dao.*;
 import com.example.b_shop.data.local.entities.*;
 
@@ -16,12 +17,17 @@ import com.example.b_shop.data.local.entities.*;
         User.class,
         Review.class,
         Order.class,
-        OrderItem.class
+        OrderItem.class,
+        UserFavorite.class,
+        CartItem.class
     },
-    version = 1,
+    version = 2,
     exportSchema = false
 )
-@TypeConverters({DateConverter.class})
+@TypeConverters({
+    DateConverter.class,
+    StringListConverter.class
+})
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "bshop_db";
     private static volatile AppDatabase instance;

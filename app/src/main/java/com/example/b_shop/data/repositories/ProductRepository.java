@@ -14,12 +14,14 @@ public class ProductRepository {
     private final ProductDao productDao;
     private final UserDao userDao;
     private final ExecutorService executorService;
+    private final int currentUserId; // TODO: Get from UserManager/Session
 
     public ProductRepository(Application application) {
         AppDatabase database = AppDatabase.getInstance(application);
         productDao = database.productDao();
         userDao = database.userDao();
         executorService = Executors.newSingleThreadExecutor();
+        currentUserId = 1; // TODO: Get from UserManager/Session
     }
 
     public void refreshFeaturedProducts() {
@@ -87,8 +89,30 @@ public class ProductRepository {
         return productDao.getTopRatedProducts(limit);
     }
 
-    public LiveData<ProductDao.ProductWithCategory> getProductWithCategory(int productId) {
-        return productDao.getProductWithCategory(productId);
+    // Favorites management
+    public boolean isProductFavorite(int productId) throws Exception {
+        return userDao.isProductFavorite(currentUserId, productId);
+    }
+
+    public void setProductFavorite(int productId, boolean isFavorite) throws Exception {
+        if (isFavorite) {
+            userDao.addToFavorites(currentUserId, productId);
+        } else {
+            userDao.removeFromFavorites(currentUserId, productId);
+        }
+    }
+
+    // Cart management
+    public void addToCart(int productId, int quantity) throws Exception {
+        userDao.addToCart(currentUserId, productId, quantity);
+    }
+
+    public void removeFromCart(int productId) throws Exception {
+        userDao.removeFromCart(currentUserId, productId);
+    }
+
+    public void updateCartQuantity(int productId, int quantity) throws Exception {
+        userDao.updateCartQuantity(currentUserId, productId, quantity);
     }
 
     // Stock management
@@ -103,43 +127,6 @@ public class ProductRepository {
         executorService.execute(() -> {
             productDao.updateProductRating(productId);
         });
-    }
-
-    // New methods for favorites
-    public boolean isProductFavorite(int productId) throws Exception {
-        return userDao.isProductFavorite(productId);
-    }
-
-    public void setProductFavorite(int productId, boolean isFavorite) throws Exception {
-        if (isFavorite) {
-            userDao.addToFavorites(productId);
-        } else {
-            userDao.removeFromFavorites(productId);
-        }
-    }
-
-    // New methods for cart
-    public void addToCart(int productId, int quantity) throws Exception {
-        // Check stock first
-        Product product = getProduct(productId);
-        if (product.getStock() >= quantity) {
-            userDao.addToCart(productId, quantity);
-        } else {
-            throw new Exception("Not enough stock available");
-        }
-    }
-
-    public void removeFromCart(int productId) throws Exception {
-        userDao.removeFromCart(productId);
-    }
-
-    public void updateCartQuantity(int productId, int quantity) throws Exception {
-        Product product = getProduct(productId);
-        if (product.getStock() >= quantity) {
-            userDao.updateCartQuantity(productId, quantity);
-        } else {
-            throw new Exception("Not enough stock available");
-        }
     }
 
     // Cleanup
