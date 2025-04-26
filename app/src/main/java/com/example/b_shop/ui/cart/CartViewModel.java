@@ -42,10 +42,36 @@ public class CartViewModel extends ViewModel {
     }
 
     private void handleCartStateChange(CartState cartState) {
+        android.util.Log.d("CartViewModel", "Handling cart state change - current loading state: " +
+            (uiState.getValue() != null ? uiState.getValue().isLoading() : "null"));
+        
         if (cartState == null) {
-            uiState.setValue(new CartUIState(true));
+            android.util.Log.d("CartViewModel", "Cart state is null, maintaining current state with loading=true");
+            CartUIState currentState = uiState.getValue();
+            if (currentState != null) {
+                android.util.Log.d("CartViewModel", "Current state exists, updating with loading=true");
+                uiState.setValue(new CartUIState(
+                    currentState.getItems(),
+                    currentState.getTotal(),
+                    true,
+                    currentState.getError(),
+                    currentState.isEmpty(),
+                    currentState.getCheckoutState(),
+                    null
+                ));
+            } else {
+                android.util.Log.d("CartViewModel", "No current state, creating new loading state");
+                uiState.setValue(new CartUIState(true));
+            }
             return;
         }
+
+        android.util.Log.d("CartViewModel", String.format(
+            "Received cart state - Items: %d, Total: %.2f, IsEmpty: %b",
+            cartState.getItems() != null ? cartState.getItems().size() : 0,
+            cartState.getTotal(),
+            cartState.isEmpty()
+        ));
 
         uiState.setValue(new CartUIState(
             cartState.getItems(),
@@ -56,6 +82,8 @@ public class CartViewModel extends ViewModel {
             checkoutUseCase.getCheckoutState().getValue(),
             null
         ));
+        
+        android.util.Log.d("CartViewModel", "Updated UI state - loading=false");
     }
 
     private void handleError(CartError error) {

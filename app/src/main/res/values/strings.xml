@@ -11,6 +11,15 @@
     <string name="processing">Processing...</string>
     <string name="login">Login</string>
 
+    <!-- Auth -->
+    <string name="login_title">Welcome back screen heading</string>
+    <string name="email_input">Email address input field</string>
+    <string name="password_input">Password input field</string>
+    <string name="toggle_password_visibility">Toggle password visibility</string>
+    <string name="remember_me_checkbox">Remember login credentials</string>
+    <string name="login_button">Sign in to your account</string>
+    <string name="loading_indicator">Processing login request</string>
+
     <!-- Session -->
     <string name="session_expired_title">Session Expired</string>
     <string name="session_expired_message">Your session has expired. Please login again to continue.</string>
@@ -20,6 +29,10 @@
     <string name="add_to_cart">Add to Cart</string>
     <string name="product_description">Description</string>
     <string name="product_reviews">Reviews</string>
+
+    <!-- Categories -->
+    <string name="categories_empty">No categories found</string>
+    <string name="search_categories">Search categories</string>
 
     <!-- Wish List -->
     <string name="wish_list">Wish List</string>
@@ -46,4 +59,11 @@
     <string name="checkout_success_message">Your order has been placed successfully and will be processed shortly.</string>
     <string name="view_orders">View Orders</string>
     <string name="continue_shopping">Continue Shopping</string>
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="my_orders">My Orders</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
 </resources>

@@ -81,12 +81,10 @@ public class CartFragment extends Fragment implements CartItemListener {
     }
 
     private void setupViewModel() {
-        AppDatabase database = ((BShopApplication) requireActivity().getApplication())
-            .getDatabase();
-        UserManager userManager = ((BShopApplication) requireActivity().getApplication())
-            .getUserManager();
+        BShopApplication application = (BShopApplication) requireActivity().getApplication();
         
-        CartViewModelFactory factory = new CartViewModelFactory(database, userManager);
+        android.util.Log.d("CartFragment", "Setting up CartViewModel with singleton repositories");
+        CartViewModelFactory factory = new CartViewModelFactory(application);
         viewModel = new ViewModelProvider(this, factory).get(CartViewModel.class);
         viewModel.getUiState().observe(getViewLifecycleOwner(), this::updateUI);
     }
@@ -100,25 +98,42 @@ public class CartFragment extends Fragment implements CartItemListener {
     }
 
     private void updateUI(CartViewModel.CartUIState state) {
+        android.util.Log.d("CartFragment", String.format(
+            "Updating UI - Loading: %b, Empty: %b, HasItems: %b, HasError: %b, RequiresLogin: %b",
+            state.isLoading(),
+            state.isEmpty(),
+            state.getItems() != null,
+            state.getError() != null,
+            state.requiresLogin()
+        ));
+
         // Update loading state
-        binding.loading.setVisibility(state.isLoading() ? View.VISIBLE : View.GONE);
-        binding.swipeRefresh.setRefreshing(state.isLoading());
+        boolean isLoading = state.isLoading();
+        android.util.Log.d("CartFragment", "Setting loading visibility: " + (isLoading ? "VISIBLE" : "GONE"));
+        binding.loading.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        binding.swipeRefresh.setRefreshing(isLoading);
 
         // Handle session expiration
         if (state.requiresLogin()) {
+            android.util.Log.d("CartFragment", "Session expired, showing login required");
             showLoginRequired();
             return;
         }
 
         // Update empty state
-        binding.emptyState.setVisibility(state.isEmpty() ? View.VISIBLE : View.GONE);
-        binding.recyclerCart.setVisibility(state.isEmpty() ? View.GONE : View.VISIBLE);
-        binding.checkoutContainer.setVisibility(state.isEmpty() ? View.GONE : View.VISIBLE);
+        boolean isEmpty = state.isEmpty();
+        android.util.Log.d("CartFragment", "Updating empty state visibility: " + isEmpty);
+        binding.emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        binding.recyclerCart.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        binding.checkoutContainer.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
         // Update cart items
         if (state.getItems() != null) {
+            android.util.Log.d("CartFragment", "Updating cart items: count=" + state.getItems().size());
             adapter.submitList(state.getItems());
             binding.textTotal.setText(currencyFormatter.format(state.getTotal()));
+        } else {
+            android.util.Log.d("CartFragment", "No cart items to display");
         }
 
         // Handle errors

@@ -62,9 +62,21 @@ public class CartUseCase {
         Float total,
         Integer count
     ) {
-        if (items != null && total != null && count != null) {
-            cartState.setValue(new CartState(items, total, count));
-        }
+        android.util.Log.d("CartUseCase", String.format(
+            "Updating cart state - Items: %s, Total: %s, Count: %s",
+            items != null ? items.size() : "null",
+            total != null ? total : "null",
+            count != null ? count : "null"
+        ));
+
+        // Handle null values gracefully
+        List<CartItemWithProduct> safeItems = items != null ? items : List.of();
+        float safeTotal = total != null ? total : 0f;
+        int safeCount = count != null ? count : 0;
+
+        // Always emit a state update
+        android.util.Log.d("CartUseCase", "Emitting new cart state");
+        cartState.setValue(new CartState(safeItems, safeTotal, safeCount));
     }
 
     public LiveData<CartState> getCartState() {

@@ -26,17 +26,38 @@ public class CartRepository {
         this.cartDao = cartDao;
         this.productDao = productDao;
         this.userManager = userManager;
-        this.executorService = Executors.newSingleThreadExecutor();
         this.cartError = new MutableLiveData<>();
+        
+        // Create executor with custom error handling
+        this.executorService = Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r);
+            thread.setUncaughtExceptionHandler((t, e) -> {
+                android.util.Log.e("CartRepository", "Uncaught exception in cart operation", e);
+                CartError error = CartError.databaseError("Unexpected error in cart operation", e);
+                cartError.postValue(error);
+            });
+            return thread;
+        });
+        
+        android.util.Log.d("CartRepository", "CartRepository initialized");
     }
 
     public LiveData<List<CartItemWithProduct>> getCartItems() {
+        android.util.Log.d("CartRepository", "Getting cart items");
         try {
+            android.util.Log.d("CartRepository", "Validating user session");
             userManager.validateUserSession();
-            return cartDao.getCartItemsWithProduct(userManager.getCurrentUserId());
+            int userId = userManager.getCurrentUserId();
+            android.util.Log.d("CartRepository", "Fetching cart items for user: " + userId);
+            LiveData<List<CartItemWithProduct>> result = cartDao.getCartItemsWithProduct(userId);
+            android.util.Log.d("CartRepository", "Cart items LiveData obtained");
+            return result;
         } catch (IllegalStateException e) {
+            android.util.Log.e("CartRepository", "Session validation failed", e);
             cartError.postValue(CartError.sessionExpired());
-            return new MutableLiveData<>();
+            MutableLiveData<List<CartItemWithProduct>> emptyData = new MutableLiveData<>();
+            emptyData.postValue(null); // Emit null to trigger state update
+            return emptyData;
         }
     }
 
@@ -65,8 +86,10 @@ public class CartRepository {
     }
 
     public void addToCart(int productId, int quantity, CartOperationCallback callback) {
+        android.util.Log.d("CartRepository", "Queuing addToCart operation");
         executorService.execute(() -> {
             try {
+                android.util.Log.d("CartRepository", "Starting addToCart: productId=" + productId + ", quantity=" + quantity);
                 userManager.validateUserSession();
 
                 if (quantity <= 0) {
@@ -84,13 +107,7 @@ public class CartRepository {
                     return;
                 }
 
-                // Check if adding this quantity would exceed stock
-                if (!validateStock(productId, quantity)) {
-                    CartError error = CartError.insufficientStock(productId, quantity, product.getStock());
-                    cartError.postValue(error);
-                    callback.onError(error);
-                    return;
-                }
+                android.util.Log.d("CartRepository", "Retrieved product: " + product.getProductId() + ", stock=" + product.getStock());
 
                 CartItem cartItem = new CartItem(
                     userManager.getCurrentUserId(),
@@ -99,8 +116,18 @@ public class CartRepository {
                     product.getPrice()
                 );
 
-                cartDao.insertCartItem(cartItem);
-                callback.onSuccess();
+                android.util.Log.d("CartRepository", "Attempting to validate and add to cart");
+                boolean success = cartDao.validateAndAddToCart(cartItem, product);
+                
+                if (success) {
+                    android.util.Log.d("CartRepository", "Successfully added to cart");
+                    callback.onSuccess();
+                } else {
+                    android.util.Log.w("CartRepository", "Failed to add to cart - stock validation failed");
+                    CartError error = CartError.insufficientStock(productId, quantity, product.getStock());
+                    cartError.postValue(error);
+                    callback.onError(error);
+                }
 
             } catch (IllegalStateException e) {
                 CartError error = CartError.sessionExpired();

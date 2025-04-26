@@ -8,6 +8,7 @@ import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.local.entities.Review;
 import com.example.b_shop.data.repositories.ProductRepository;
 import com.example.b_shop.data.repositories.ReviewRepository;
+import com.example.b_shop.data.repositories.UserRepository;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,6 +17,7 @@ public class ProductDetailsViewModel extends ViewModel {
     
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
     private final ExecutorService executorService;
     
     private final MutableLiveData<Product> product = new MutableLiveData<>();
@@ -26,9 +28,10 @@ public class ProductDetailsViewModel extends ViewModel {
     private final MutableLiveData<Boolean> addToCartSuccess = new MutableLiveData<>();
     private final MutableLiveData<Integer> currentImagePosition = new MutableLiveData<>();
 
-    private ProductDetailsViewModel(ProductRepository productRepository, ReviewRepository reviewRepository) {
+    private ProductDetailsViewModel(ProductRepository productRepository, ReviewRepository reviewRepository, UserRepository userRepository) {
         this.productRepository = productRepository;
         this.reviewRepository = reviewRepository;
+        this.userRepository = userRepository;
         this.executorService = Executors.newSingleThreadExecutor();
         currentImagePosition.setValue(0);
     }
@@ -46,8 +49,13 @@ public class ProductDetailsViewModel extends ViewModel {
                 reviews.postValue(productReviews);
                 
                 // Check favorite status
-                boolean favoriteStatus = productRepository.isProductFavorite(productId);
-                isFavorite.postValue(favoriteStatus);
+                try {
+                    boolean favoriteStatus = userRepository.isProductFavorite(productId);
+                    isFavorite.postValue(favoriteStatus);
+                } catch (IllegalStateException e) {
+                    // User not logged in - product is not favorite
+                    isFavorite.postValue(false);
+                }
                 
                 isLoading.postValue(false);
             } catch (Exception e) {
@@ -78,10 +86,16 @@ public class ProductDetailsViewModel extends ViewModel {
             executorService.execute(() -> {
                 try {
                     boolean newStatus = !Boolean.TRUE.equals(isFavorite.getValue());
-                    productRepository.setProductFavorite(currentProduct.getProductId(), newStatus);
+                    if (newStatus) {
+                        userRepository.addToFavorites(currentProduct.getProductId());
+                    } else {
+                        userRepository.removeFromFavorites(currentProduct.getProductId());
+                    }
                     isFavorite.postValue(newStatus);
+                } catch (IllegalStateException e) {
+                    error.postValue("Please log in to manage favorites");
                 } catch (Exception e) {
-                    error.postValue(e.getMessage());
+                    error.postValue("Failed to update favorite status: " + e.getMessage());
                 }
             });
         }
@@ -132,17 +146,19 @@ public class ProductDetailsViewModel extends ViewModel {
     public static class Factory implements ViewModelProvider.Factory {
         private final ProductRepository productRepository;
         private final ReviewRepository reviewRepository;
+        private final UserRepository userRepository;
 
-        public Factory(ProductRepository productRepository, ReviewRepository reviewRepository) {
+        public Factory(ProductRepository productRepository, ReviewRepository reviewRepository, UserRepository userRepository) {
             this.productRepository = productRepository;
             this.reviewRepository = reviewRepository;
+            this.userRepository = userRepository;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public <T extends ViewModel> T create(Class<T> modelClass) {
             if (modelClass.isAssignableFrom(ProductDetailsViewModel.class)) {
-                return (T) new ProductDetailsViewModel(productRepository, reviewRepository);
+                return (T) new ProductDetailsViewModel(productRepository, reviewRepository, userRepository);
             }
             throw new IllegalArgumentException("Unknown ViewModel class");
         }

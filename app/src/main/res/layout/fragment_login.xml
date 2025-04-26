@@ -8,7 +8,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <TextView
             android:id="@+id/titleText"
@@ -16,6 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
             android:text="Welcome Back"
+            android:contentDescription="@string/login_title"
             android:textAppearance="?attr/textAppearanceHeadlineMedium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -28,6 +31,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
             android:hint="Email"
+            app:errorEnabled="true"
+            app:errorIconDrawable="@null"
             app:layout_constraintTop_toBottomOf="@id/titleText">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -35,7 +40,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:contentDescription="@string/email_input" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -47,6 +53,9 @@
             android:layout_marginTop="16dp"
             android:hint="Password"
             app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            app:errorIconDrawable="@null"
+            app:passwordToggleContentDescription="@string/toggle_password_visibility"
             app:layout_constraintTop_toBottomOf="@id/emailLayout">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -54,7 +63,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:contentDescription="@string/password_input" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -64,6 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Remember me"
+            android:contentDescription="@string/remember_me_checkbox"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/passwordLayout" />
 
@@ -74,6 +85,7 @@
             android:layout_marginTop="24dp"
             android:padding="12dp"
             android:text="Login"
+            android:contentDescription="@string/login_button"
             app:layout_constraintTop_toBottomOf="@id/rememberMeCheckbox" />
 
         <TextView
@@ -98,15 +110,30 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/registerPrompt" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/loadingOverlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#80000000"
+            android:clickable="true"
+            android:focusable="true"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/loading_indicator"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -5,6 +5,7 @@ import com.example.b_shop.data.local.dao.ReviewDao;
 import com.example.b_shop.data.local.dao.UserDao;
 import com.example.b_shop.data.local.dao.ProductDao;
 import com.example.b_shop.data.local.entities.Review;
+import com.example.b_shop.utils.UserManager;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,11 +16,13 @@ public class ReviewRepository {
     private final UserDao userDao;
     private final ProductRepository productRepository;
     private final ExecutorService executorService;
+    private final UserManager userManager;
 
-    public ReviewRepository(ReviewDao reviewDao, UserDao userDao, ProductDao productDao) {
+    public ReviewRepository(ReviewDao reviewDao, UserDao userDao, ProductDao productDao, UserManager userManager, CartRepository cartRepository) {
         this.reviewDao = reviewDao;
         this.userDao = userDao;
-        this.productRepository = new ProductRepository(productDao, userDao);
+        this.userManager = userManager;
+        this.productRepository = new ProductRepository(productDao, cartRepository, userManager);
         this.executorService = Executors.newSingleThreadExecutor();
     }
 

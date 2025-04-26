@@ -11,6 +11,7 @@ import androidx.room.Update;
 import com.example.b_shop.data.local.entities.User;
 import com.example.b_shop.data.local.entities.Order;
 import com.example.b_shop.data.local.entities.Review;
+import com.example.b_shop.data.local.entities.Product;
 import java.util.List;
 
 @Dao
@@ -72,15 +73,29 @@ public interface UserDao {
     @Query("DELETE FROM user_favorites WHERE userId = :userId AND productId = :productId")
     void removeFromFavorites(int userId, int productId);
 
-    // Cart management
+    @Query("SELECT p.* FROM products p " +
+           "INNER JOIN user_favorites uf ON p.productId = uf.productId " +
+           "WHERE uf.userId = :userId")
+    LiveData<List<Product>> getFavoriteProductsForUser(int userId);
+
+    // Cart management - Deprecated: Use CartDao instead
+    @Deprecated
     @Query("INSERT INTO cart_items (userId, productId, quantity) VALUES (:userId, :productId, :quantity)")
-    void addToCart(int userId, int productId, int quantity);
+    default void addToCart(int userId, int productId, int quantity) {
+        throw new UnsupportedOperationException("Cart operations moved to CartDao - use CartRepository instead");
+    }
 
+    @Deprecated
     @Query("DELETE FROM cart_items WHERE userId = :userId AND productId = :productId")
-    void removeFromCart(int userId, int productId);
+    default void removeFromCart(int userId, int productId) {
+        throw new UnsupportedOperationException("Cart operations moved to CartDao - use CartRepository instead");
+    }
 
+    @Deprecated
     @Query("UPDATE cart_items SET quantity = :quantity WHERE userId = :userId AND productId = :productId")
-    void updateCartQuantity(int userId, int productId, int quantity);
+    default void updateCartQuantity(int userId, int productId, int quantity) {
+        throw new UnsupportedOperationException("Cart operations moved to CartDao - use CartRepository instead");
+    }
 
     // User info retrieval
     @Query("SELECT name FROM users WHERE userId = :userId")

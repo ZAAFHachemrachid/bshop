@@ -1,5 +1,7 @@
 package com.example.b_shop.ui.product;
 
+import com.example.b_shop.data.repositories.UserRepository;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,11 +64,13 @@ public class ProductDetailsFragment extends Fragment {
         // Get repositories
         ProductRepository productRepository = application.getProductRepository();
         ReviewRepository reviewRepository = application.getReviewRepository();
+        UserRepository userRepository = application.getUserRepository();
         
         // Create factory
         ProductDetailsViewModel.Factory factory = new ProductDetailsViewModel.Factory(
             productRepository,
-            reviewRepository
+            reviewRepository,
+            userRepository
         );
         
         // Get ViewModel instance using factory

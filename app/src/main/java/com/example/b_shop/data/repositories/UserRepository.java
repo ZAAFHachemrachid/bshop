@@ -1,6 +1,7 @@
 package com.example.b_shop.data.repositories;
 
 import androidx.lifecycle.LiveData;
+import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.local.dao.UserDao;
 import com.example.b_shop.data.local.entities.User;
 import com.example.b_shop.data.local.entities.Order;
@@ -19,6 +20,39 @@ public class UserRepository {
     public UserRepository(UserDao userDao) {
         this.userDao = userDao;
         this.executorService = Executors.newSingleThreadExecutor();
+    }
+
+    // Favorites management
+    public LiveData<List<Product>> getFavoriteProducts() {
+        if (currentUser == null) {
+            throw new IllegalStateException("User must be logged in to access favorites");
+        }
+        return userDao.getFavoriteProductsForUser(currentUser.getUserId());
+    }
+
+    public void addToFavorites(int productId) {
+        if (currentUser == null) {
+            throw new IllegalStateException("User must be logged in to manage favorites");
+        }
+        executorService.execute(() -> {
+            userDao.addToFavorites(currentUser.getUserId(), productId);
+        });
+    }
+
+    public void removeFromFavorites(int productId) {
+        if (currentUser == null) {
+            throw new IllegalStateException("User must be logged in to manage favorites");
+        }
+        executorService.execute(() -> {
+            userDao.removeFromFavorites(currentUser.getUserId(), productId);
+        });
+    }
+
+    public boolean isProductFavorite(int productId) {
+        if (currentUser == null) {
+            return false;
+        }
+        return userDao.isProductFavorite(currentUser.getUserId(), productId);
     }
 
     // Authentication methods

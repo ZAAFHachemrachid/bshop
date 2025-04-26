@@ -2,8 +2,9 @@ package com.example.b_shop.data.repositories;
 
 import androidx.lifecycle.LiveData;
 import com.example.b_shop.data.local.dao.ProductDao;
-import com.example.b_shop.data.local.dao.UserDao;
 import com.example.b_shop.data.local.entities.Product;
+import com.example.b_shop.data.repositories.CartRepository;
+import com.example.b_shop.data.repositories.CartRepository.CartOperationCallback;
 import com.example.b_shop.utils.UserManager;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -11,13 +12,13 @@ import java.util.concurrent.Executors;
 
 public class ProductRepository {
     private final ProductDao productDao;
-    private final UserDao userDao;
+    private final CartRepository cartRepository;
     private final UserManager userManager;
     private final ExecutorService executorService;
 
-    public ProductRepository(ProductDao productDao, UserDao userDao, UserManager userManager) {
+    public ProductRepository(ProductDao productDao, CartRepository cartRepository, UserManager userManager) {
         this.productDao = productDao;
-        this.userDao = userDao;
+        this.cartRepository = cartRepository;
         this.userManager = userManager;
         this.executorService = Executors.newSingleThreadExecutor();
     }
@@ -55,39 +56,27 @@ public class ProductRepository {
         return productDao.getFavoriteProducts(userManager.getCurrentUserId());
     }
 
-    // Favorites management
+    // Favorites management - TODO: Move to UserRepository
     public boolean isProductFavorite(int productId) throws Exception {
-        userManager.validateUserSession();
-        return userDao.isProductFavorite(userManager.getCurrentUserId(), productId);
+        throw new UnsupportedOperationException("Favorites management moved to UserRepository");
     }
 
     public void setProductFavorite(int productId, boolean isFavorite) throws Exception {
-        userManager.validateUserSession();
-        int userId = userManager.getCurrentUserId();
-        
-        executorService.execute(() -> {
-            try {
-                if (isFavorite) {
-                    userDao.addToFavorites(userId, productId);
-                } else {
-                    userDao.removeFromFavorites(userId, productId);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        throw new UnsupportedOperationException("Favorites management moved to UserRepository");
     }
 
-    // Cart management
+    // Cart management - delegated to CartRepository
     public void addToCart(int productId, int quantity) throws Exception {
-        userManager.validateUserSession();
-        int userId = userManager.getCurrentUserId();
-        
-        executorService.execute(() -> {
-            try {
-                userDao.addToCart(userId, productId, quantity);
-            } catch (Exception e) {
-                e.printStackTrace();
+        android.util.Log.d("ProductRepository", "Delegating addToCart to CartRepository");
+        cartRepository.addToCart(productId, quantity, new CartOperationCallback() {
+            @Override
+            public void onSuccess() {
+                android.util.Log.d("ProductRepository", "Cart operation succeeded");
+            }
+
+            @Override
+            public void onError(com.example.b_shop.data.local.errors.CartError error) {
+                android.util.Log.e("ProductRepository", "Cart operation failed: " + error.getDetails());
             }
         });
     }

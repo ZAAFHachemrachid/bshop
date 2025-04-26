@@ -25,7 +25,8 @@ public class LoginFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        AuthViewModelFactory factory = new AuthViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(requireActivity(), factory).get(AuthViewModel.class);
     }
 
     @Nullable
@@ -61,13 +62,12 @@ public class LoginFragment extends Fragment {
 
     private void observeViewModel() {
         viewModel.getLoginResult().observe(getViewLifecycleOwner(), result -> {
-            binding.progressBar.setVisibility(View.GONE);
-            binding.loginButton.setEnabled(true);
-
+            hideLoading();
+            
             if (result.isSuccess()) {
                 navigateToMain();
             } else {
-                showError(result.getError());
+                handleError(result.getError());
             }
         });
     }
@@ -76,9 +76,10 @@ public class LoginFragment extends Fragment {
         String email = binding.emailInput.getText().toString().trim();
         String password = binding.passwordInput.getText().toString().trim();
 
+        clearErrors();
+        
         if (validateInput(email, password)) {
-            binding.progressBar.setVisibility(View.VISIBLE);
-            binding.loginButton.setEnabled(false);
+            showLoading();
             viewModel.login(email, password, binding.rememberMeCheckbox.isChecked());
         }
     }
@@ -112,13 +113,64 @@ public class LoginFragment extends Fragment {
                  .navigate(R.id.action_login_to_main);
     }
 
-    private void showError(String error) {
-        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+    private void showLoading() {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.loginButton.setEnabled(false);
+        binding.emailInput.setEnabled(false);
+        binding.passwordInput.setEnabled(false);
+        binding.rememberMeCheckbox.setEnabled(false);
+    }
+
+    private void hideLoading() {
+        binding.progressBar.setVisibility(View.GONE);
+        binding.loginButton.setEnabled(true);
+        binding.emailInput.setEnabled(true);
+        binding.passwordInput.setEnabled(true);
+        binding.rememberMeCheckbox.setEnabled(true);
+    }
+
+    private void handleError(String error) {
+        if (error.toLowerCase().contains("email")) {
+            binding.emailLayout.setError(error);
+        } else if (error.toLowerCase().contains("password")) {
+            binding.passwordLayout.setError(error);
+        } else {
+            binding.emailLayout.setError(null);
+            binding.passwordLayout.setError(null);
+            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void clearErrors() {
+        binding.emailLayout.setError(null);
+        binding.passwordLayout.setError(null);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        // Clear observers to prevent memory leaks
+        viewModel.getLoginResult().removeObservers(getViewLifecycleOwner());
         binding = null;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save input states if needed
+        if (binding != null) {
+            outState.putString("email", binding.emailInput.getText().toString());
+            outState.putBoolean("remember_me", binding.rememberMeCheckbox.isChecked());
+        }
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        // Restore input states if needed
+        if (savedInstanceState != null && binding != null) {
+            binding.emailInput.setText(savedInstanceState.getString("email", ""));
+            binding.rememberMeCheckbox.setChecked(savedInstanceState.getBoolean("remember_me", false));
+        }
     }
 }

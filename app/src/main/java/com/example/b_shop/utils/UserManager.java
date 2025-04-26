@@ -93,9 +93,12 @@ public class UserManager {
      * @throws IllegalStateException if no user is logged in
      */
     public void validateUserSession() throws IllegalStateException {
+        android.util.Log.d("UserManager", "Validating user session");
         if (!isUserLoggedIn()) {
+            android.util.Log.w("UserManager", "No active user session found");
             throw new IllegalStateException("No active user session");
         }
+        android.util.Log.d("UserManager", "Session validation successful - userId: " + getCurrentUserId());
     }
 
     /**

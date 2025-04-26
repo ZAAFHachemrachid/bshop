@@ -2,6 +2,7 @@ package com.example.b_shop.data.local.entities;
 
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
@@ -36,6 +37,10 @@ public class CartItem {
     private float itemPrice;
     private long addedAt;  // Timestamp in milliseconds
 
+    // Required by Room
+    public CartItem() {}
+
+    @Ignore
     public CartItem(int userId, int productId, int quantity, float itemPrice) {
         this.userId = userId;
         this.productId = productId;

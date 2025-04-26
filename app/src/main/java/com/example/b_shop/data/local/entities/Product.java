@@ -2,6 +2,7 @@ package com.example.b_shop.data.local.entities;
 
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
@@ -34,7 +35,15 @@ public class Product {
     @TypeConverters(StringListConverter.class)
     private List<String> images;
 
-    public Product(String name, String description, float price, 
+    // Required by Room
+    public Product() {
+        this.images = new ArrayList<>();
+        this.rating = 0.0f;
+        this.reviewCount = 0;
+    }
+
+    @Ignore
+    public Product(String name, String description, float price,
                   int categoryId, String imagePath, int stock) {
         this.name = name;
         this.description = description;

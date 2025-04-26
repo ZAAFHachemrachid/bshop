@@ -4,11 +4,13 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.b_shop.BShopApplication;
 import com.example.b_shop.data.local.AppDatabase;
 import com.example.b_shop.data.local.entities.Category;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.repositories.CategoryRepository;
 import com.example.b_shop.data.repositories.ProductRepository;
+import com.example.b_shop.utils.UserManager;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,9 +23,16 @@ public class HomeViewModel extends AndroidViewModel {
 
     public HomeViewModel(Application application) {
         super(application);
-        AppDatabase database = AppDatabase.getInstance(application);
+        
+        // Get application instance
+        BShopApplication app = (BShopApplication) application;
+        AppDatabase database = app.getDatabase();
+        UserManager userManager = app.getUserManager();
+
+        // Initialize repositories using application instances
         categoryRepository = new CategoryRepository(database.categoryDao());
-        productRepository = new ProductRepository(database.productDao(), database.userDao());
+        productRepository = app.getProductRepository();
+        
         executorService = Executors.newSingleThreadExecutor();
         isRefreshing = new MutableLiveData<>(false);
     }

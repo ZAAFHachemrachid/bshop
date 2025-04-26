@@ -18,6 +18,7 @@ import com.example.b_shop.data.repositories.CategoryRepository;
 import com.example.b_shop.data.repositories.ProductRepository;
 import com.example.b_shop.databinding.FragmentCategoryProductsBinding;
 import com.example.b_shop.ui.adapters.ProductAdapter;
+import com.example.b_shop.utils.UserManager;
 
 public class CategoryProductsFragment extends Fragment {
     
@@ -55,7 +56,7 @@ public class CategoryProductsFragment extends Fragment {
         // Get application instance
         BShopApplication application = (BShopApplication) requireActivity().getApplication();
         
-        // Get repositories
+        // Get repositories from application
         ProductRepository productRepository = application.getProductRepository();
         CategoryRepository categoryRepository = application.getCategoryRepository();
         
