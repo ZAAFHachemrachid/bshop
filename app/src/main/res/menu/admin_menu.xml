@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- User Management Section -->
+    <group android:id="@+id/group_user_management">
+        <item
+            android:id="@+id/action_view_users"
+            android:icon="@android:drawable/ic_menu_my_calendar"
+            android:title="View Users"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_create_admin"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="Create Admin User"
+            app:showAsAction="never" />
+    </group>
+
+    <!-- Order Management Section -->
+    <group android:id="@+id/group_order_management">
+        <item
+            android:id="@+id/action_view_orders"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="View Orders"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_order_analytics"
+            android:icon="@android:drawable/ic_menu_report_image"
+            android:title="Order Analytics"
+            app:showAsAction="never" />
+    </group>
+
+    <!-- System Section -->
+    <group android:id="@+id/group_system">
+        <item
+            android:id="@+id/action_audit_logs"
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="View Audit Logs"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_system_settings"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="System Settings"
+            app:showAsAction="never" />
+    </group>
+
+    <!-- Security Section -->
+    <group android:id="@+id/group_security">
+        <item
+            android:id="@+id/action_activity_log"
+            android:icon="@android:drawable/ic_menu_view"
+            android:title="Activity Log"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_security_settings"
+            android:icon="@android:drawable/ic_lock_lock"
+            android:title="Security Settings"
+            app:showAsAction="never" />
+    </group>
+
+    <!-- Exit Admin Mode -->
+    <item
+        android:id="@+id/action_exit_admin"
+        android:icon="@android:drawable/ic_menu_revert"
+        android:title="Exit Admin Mode"
+        app:showAsAction="never" />
+</menu>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- View Order Details -->
+    <item
+        android:id="@+id/action_view_order_details"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="View Details"
+        app:showAsAction="ifRoom" />
+
+    <!-- Update Order Status -->
+    <item
+        android:id="@+id/action_update_status"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:title="Update Status"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/status_pending"
+                android:title="Pending" />
+            <item
+                android:id="@+id/status_processing"
+                android:title="Processing" />
+            <item
+                android:id="@+id/status_shipped"
+                android:title="Shipped" />
+            <item
+                android:id="@+id/status_delivered"
+                android:title="Delivered" />
+            <item
+                android:id="@+id/status_cancelled"
+                android:title="Cancelled" />
+            <item
+                android:id="@+id/status_refunded"
+                android:title="Refunded" />
+        </menu>
+    </item>
+
+    <!-- Customer Actions -->
+    <item
+        android:id="@+id/action_view_customer"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="View Customer"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_contact_customer"
+        android:icon="@android:drawable/ic_menu_send"
+        android:title="Contact Customer"
+        app:showAsAction="never" />
+
+    <!-- Order Actions -->
+    <item
+        android:id="@+id/action_print_invoice"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="Print Invoice"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_refund_order"
+        android:icon="@android:drawable/ic_menu_rotate"
+        android:title="Process Refund"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_view_order_history"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="View History"
+        app:showAsAction="never" />
+
+    <!-- Cancel Order -->
+    <item
+        android:id="@+id/action_cancel_order"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        android:title="Cancel Order"
+        android:visible="true"
+        app:showAsAction="never" />
+
+</menu>

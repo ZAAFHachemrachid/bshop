@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Embedded;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
@@ -12,12 +13,17 @@ import com.example.b_shop.data.local.entities.User;
 import com.example.b_shop.data.local.entities.Order;
 import com.example.b_shop.data.local.entities.Review;
 import com.example.b_shop.data.local.entities.Product;
+import com.example.b_shop.data.local.entities.UserRole;
+import com.example.b_shop.data.local.entities.UserAuditLog;
 import java.util.List;
 
 @Dao
 public interface UserDao {
     @Insert
     long insert(User user);
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    long insertIfNotExists(User user);
 
     @Update
     void update(User user);
@@ -37,8 +43,42 @@ public interface UserDao {
     @Query("SELECT COUNT(*) FROM users WHERE email = :email")
     int checkEmailExists(String email);
 
-    @Query("SELECT * FROM users WHERE email = :email AND password = :hashedPassword LIMIT 1")
+    @Query("SELECT * FROM users WHERE email = :email AND password = :hashedPassword AND isActive = 1 LIMIT 1")
     User authenticate(String email, String hashedPassword);
+
+    // Admin specific queries
+    @Query("SELECT * FROM users WHERE role = :role")
+    LiveData<List<User>> getUsersByRole(UserRole role);
+
+    @Query("UPDATE users SET isActive = :isActive WHERE userId = :userId")
+    void updateUserActiveStatus(int userId, boolean isActive);
+
+    @Query("UPDATE users SET role = :role WHERE userId = :userId")
+    void updateUserRole(int userId, UserRole role);
+
+    @Query("UPDATE users SET lastLogin = strftime('%s', 'now') WHERE userId = :userId")
+    void updateLastLogin(int userId);
+
+    @Query("SELECT COUNT(*) FROM users WHERE role = :role")
+    int getCountByRole(UserRole role);
+
+    // Audit logging
+    @Insert
+    void insertAuditLog(UserAuditLog auditLog);
+
+    @Query("SELECT * FROM user_audit_log WHERE userId = :userId ORDER BY timestamp DESC")
+    LiveData<List<UserAuditLog>> getUserAuditLogs(int userId);
+
+    @Query("SELECT * FROM user_audit_log WHERE adminId = :adminId ORDER BY timestamp DESC")
+    LiveData<List<UserAuditLog>> getAdminAuditLogs(int adminId);
+
+    @Query("SELECT * FROM user_audit_log ORDER BY timestamp DESC LIMIT :limit")
+    LiveData<List<UserAuditLog>> getRecentAuditLogs(int limit);
+
+    // User activity tracking
+    @Transaction
+    @Query("SELECT * FROM users WHERE role = :role AND lastLogin >= :since")
+    LiveData<List<User>> getActiveUsersByRole(UserRole role, long since);
 
     // Get user's orders
     @Transaction
@@ -58,7 +98,8 @@ public interface UserDao {
     @Transaction
     @Query("SELECT u.*, " +
            "(SELECT COUNT(*) FROM orders WHERE userId = u.userId) as orderCount, " +
-           "(SELECT COUNT(*) FROM reviews WHERE userId = u.userId) as reviewCount " +
+           "(SELECT COUNT(*) FROM reviews WHERE userId = u.userId) as reviewCount, " +
+           "(SELECT COUNT(*) FROM user_audit_log WHERE adminId = u.userId) as adminActionCount " +
            "FROM users u " +
            "WHERE u.userId = :userId")
     LiveData<UserActivity> getUserActivity(int userId);
@@ -77,25 +118,6 @@ public interface UserDao {
            "INNER JOIN user_favorites uf ON p.productId = uf.productId " +
            "WHERE uf.userId = :userId")
     LiveData<List<Product>> getFavoriteProductsForUser(int userId);
-
-    // Cart management - Deprecated: Use CartDao instead
-    @Deprecated
-    @Query("INSERT INTO cart_items (userId, productId, quantity) VALUES (:userId, :productId, :quantity)")
-    default void addToCart(int userId, int productId, int quantity) {
-        throw new UnsupportedOperationException("Cart operations moved to CartDao - use CartRepository instead");
-    }
-
-    @Deprecated
-    @Query("DELETE FROM cart_items WHERE userId = :userId AND productId = :productId")
-    default void removeFromCart(int userId, int productId) {
-        throw new UnsupportedOperationException("Cart operations moved to CartDao - use CartRepository instead");
-    }
-
-    @Deprecated
-    @Query("UPDATE cart_items SET quantity = :quantity WHERE userId = :userId AND productId = :productId")
-    default void updateCartQuantity(int userId, int productId, int quantity) {
-        throw new UnsupportedOperationException("Cart operations moved to CartDao - use CartRepository instead");
-    }
 
     // User info retrieval
     @Query("SELECT name FROM users WHERE userId = :userId")
@@ -116,5 +138,6 @@ public interface UserDao {
         public User user;
         public int orderCount;
         public int reviewCount;
+        public int adminActionCount;
     }
 }

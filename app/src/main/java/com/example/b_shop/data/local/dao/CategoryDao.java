@@ -15,6 +15,9 @@ public interface CategoryDao {
     @Insert
     long insert(Category category);
 
+    @Insert
+    void insertAll(List<Category> categories);
+
     @Update
     void update(Category category);
 

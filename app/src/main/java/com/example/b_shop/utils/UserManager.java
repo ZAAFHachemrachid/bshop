@@ -2,23 +2,31 @@ package com.example.b_shop.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.b_shop.data.local.entities.UserRole;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Manages user session and authentication state
  * Provides centralized access to current user information
+ * Handles role-based session management
  */
 public class UserManager {
     private static final String PREFS_NAME = "user_prefs";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_EMAIL = "user_email";
     private static final String KEY_USER_NAME = "user_name";
+    private static final String KEY_USER_ROLE = "user_role";
+    private static final String KEY_LAST_ACTIVITY = "last_activity";
+    private static final long ADMIN_SESSION_TIMEOUT_MINUTES = 30;
     
     private final SharedPreferences prefs;
     private final MutableLiveData<Boolean> isLoggedIn;
     private final MutableLiveData<Integer> currentUserId;
+    private final MutableLiveData<Boolean> isAdminSession;
+    private LocalDateTime lastActivityTime;
 
     private static volatile UserManager instance;
 
@@ -27,6 +35,10 @@ public class UserManager {
                       .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         isLoggedIn = new MutableLiveData<>(isUserLoggedIn());
         currentUserId = new MutableLiveData<>(getUserId());
+        isAdminSession = new MutableLiveData<>(false);
+        if (isUserLoggedIn() && getUserRole() == UserRole.ADMIN) {
+            initializeAdminSession();
+        }
     }
 
     public static UserManager getInstance(Context context) {
@@ -40,15 +52,50 @@ public class UserManager {
         return instance;
     }
 
-    public void loginUser(int userId, String email, String name) {
+    public void loginUser(int userId, String email, String name, UserRole role) {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(KEY_USER_ID, userId);
         editor.putString(KEY_USER_EMAIL, email);
         editor.putString(KEY_USER_NAME, name);
+        editor.putString(KEY_USER_ROLE, role.name());
+        editor.putLong(KEY_LAST_ACTIVITY, System.currentTimeMillis());
         editor.apply();
         
         isLoggedIn.setValue(true);
         currentUserId.setValue(userId);
+
+        if (role == UserRole.ADMIN) {
+            initializeAdminSession();
+        }
+    }
+
+    private void initializeAdminSession() {
+        lastActivityTime = LocalDateTime.now();
+        isAdminSession.setValue(true);
+    }
+
+    public void updateAdminActivity() {
+        if (isAdminSession.getValue() == Boolean.TRUE) {
+            lastActivityTime = LocalDateTime.now();
+            prefs.edit()
+                .putLong(KEY_LAST_ACTIVITY, System.currentTimeMillis())
+                .apply();
+        }
+    }
+
+    public boolean validateAdminSession() {
+        if (!isUserLoggedIn() || getUserRole() != UserRole.ADMIN) {
+            return false;
+        }
+
+        if (lastActivityTime == null || 
+            ChronoUnit.MINUTES.between(lastActivityTime, LocalDateTime.now()) >= ADMIN_SESSION_TIMEOUT_MINUTES) {
+            logoutUser();
+            return false;
+        }
+
+        updateAdminActivity();
+        return true;
     }
 
     public void logoutUser() {
@@ -58,6 +105,8 @@ public class UserManager {
         
         isLoggedIn.setValue(false);
         currentUserId.setValue(null);
+        isAdminSession.setValue(false);
+        lastActivityTime = null;
     }
 
     public boolean isUserLoggedIn() {
@@ -66,6 +115,10 @@ public class UserManager {
 
     public LiveData<Boolean> getLoginState() {
         return isLoggedIn;
+    }
+
+    public LiveData<Boolean> getAdminSessionState() {
+        return isAdminSession;
     }
 
     public int getCurrentUserId() {
@@ -88,17 +141,24 @@ public class UserManager {
         return prefs.getString(KEY_USER_NAME, null);
     }
 
+    public UserRole getUserRole() {
+        String roleStr = prefs.getString(KEY_USER_ROLE, UserRole.USER.name());
+        return UserRole.valueOf(roleStr);
+    }
+
     /**
      * Validates if there is an active user session
-     * @throws IllegalStateException if no user is logged in
+     * For admin users, also checks session timeout
+     * @throws IllegalStateException if no user is logged in or admin session has expired
      */
     public void validateUserSession() throws IllegalStateException {
-        android.util.Log.d("UserManager", "Validating user session");
         if (!isUserLoggedIn()) {
-            android.util.Log.w("UserManager", "No active user session found");
             throw new IllegalStateException("No active user session");
         }
-        android.util.Log.d("UserManager", "Session validation successful - userId: " + getCurrentUserId());
+
+        if (getUserRole() == UserRole.ADMIN && !validateAdminSession()) {
+            throw new IllegalStateException("Admin session has expired");
+        }
     }
 
     /**
@@ -109,5 +169,20 @@ public class UserManager {
         editor.putString(KEY_USER_EMAIL, email);
         editor.putString(KEY_USER_NAME, name);
         editor.apply();
+    }
+
+    /**
+     * Checks if the current user has admin privileges
+     */
+    public boolean isCurrentUserAdmin() {
+        return isUserLoggedIn() && getUserRole() == UserRole.ADMIN && validateAdminSession();
+    }
+    
+    /**
+     * Gets the admin session timeout duration in minutes
+     * @return The number of minutes after which an admin session expires
+     */
+    public static long getAdminSessionTimeoutMinutes() {
+        return ADMIN_SESSION_TIMEOUT_MINUTES;
     }
 }

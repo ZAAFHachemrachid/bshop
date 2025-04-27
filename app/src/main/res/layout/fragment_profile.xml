@@ -1,99 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/iv_profile"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="32dp"
-        android:contentDescription="@string/profile_image"
-        android:src="@drawable/ic_profile"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_user_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/iv_profile" />
-
-    <TextView
-        android:id="@+id/tv_user_email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_user_name" />
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/tv_user_email">
+        android:padding="16dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_edit_profile"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+        <!-- Profile Header -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:gravity="start|center_vertical"
-            android:text="@string/edit_profile"
-            android:textAllCaps="false" />
+            android:layout_marginBottom="16dp"
+            app:cardElevation="4dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivUserAvatar"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    app:shapeAppearanceOverlay="@style/CircleImageView"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvUserName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        tools:text="John Doe"/>
+
+                    <TextView
+                        android:id="@+id/tvUserEmail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBody2"
+                        android:textColor="?android:attr/textColorSecondary"
+                        tools:text="john.doe@example.com"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Actions Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Actions"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Orders Button -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_my_orders"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:id="@+id/btnOrders"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/view_orders"
             android:layout_marginBottom="8dp"
-            android:gravity="start|center_vertical"
-            android:text="@string/my_orders"
-            android:textAllCaps="false" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_settings"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:gravity="start|center_vertical"
-            android:text="@string/settings"
-            android:textAllCaps="false" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_logout"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:icon="@android:drawable/ic_menu_recent_history"/>
+
+        <!-- Admin Dashboard Button (Initially Hidden) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAdminDashboard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/admin_dashboard"
+            android:layout_marginBottom="8dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:icon="@android:drawable/ic_menu_manage"
+            android:visibility="gone"
+            tools:visibility="visible"/>
+
+        <!-- Settings Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
             android:layout_marginTop="16dp"
-            android:text="@string/logout"
-            android:textAllCaps="false"
-            android:textColor="@android:color/holo_red_dark" />
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Settings List -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Edit Profile -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEditProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Edit Profile"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    app:icon="@android:drawable/ic_menu_edit"/>
+
+                <!-- Change Password -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnChangePassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Change Password"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    app:icon="@android:drawable/ic_lock_lock"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Logout Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:textColor="?attr/colorError"
+            app:strokeColor="?attr/colorError"
+            app:icon="@android:drawable/ic_lock_power_off"
+            app:iconTint="?attr/colorError"/>
 
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

@@ -16,6 +16,12 @@ public interface ProductDao {
     @Insert
     long insert(Product product);
 
+    @Insert
+    void insertAll(List<Product> products);
+
+    @Query("SELECT COUNT(*) FROM products")
+    int getProductCount();
+
     @Update
     void update(Product product);
 

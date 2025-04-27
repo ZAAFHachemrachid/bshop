@@ -1,72 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- General -->
+    <!-- App -->
     <string name="app_name">B-Shop</string>
+
+    <!-- Navigation -->
     <string name="home">Home</string>
+    <string name="profile">Profile</string>
+    <string name="cart">Cart</string>
+    <string name="wish_list">Wishlist</string>
     <string name="categories">Categories</string>
+    <string name="checkout">Checkout</string>
     <string name="product_details">Product Details</string>
-    <string name="category_image">Category image</string>
-    <string name="product_image">Product image</string>
-    <string name="dismiss">Dismiss</string>
-    <string name="processing">Processing...</string>
+    <string name="view_orders">Orders</string>
     <string name="login">Login</string>
 
-    <!-- Auth -->
-    <string name="login_title">Welcome back screen heading</string>
-    <string name="email_input">Email address input field</string>
-    <string name="password_input">Password input field</string>
-    <string name="toggle_password_visibility">Toggle password visibility</string>
-    <string name="remember_me_checkbox">Remember login credentials</string>
-    <string name="login_button">Sign in to your account</string>
-    <string name="loading_indicator">Processing login request</string>
-    <string name="error_login_failed">Login failed. Please check your credentials and try again.</string>
-    <string name="error_invalid_deep_link">Invalid deep link. Redirecting to login.</string>
+    <!-- Authentication -->
+    <string name="register">Register</string>
+    <string name="forgot_password">Forgot Password?</string>
 
-    <!-- Session -->
-    <string name="session_expired_title">Session Expired</string>
-    <string name="session_expired_message">Your session has expired. Please login again to continue.</string>
+    <!-- Admin -->
+    <string name="admin_dashboard">Admin Dashboard</string>
+    <string name="user_management">User Management</string>
+    <string name="order_management">Order Management</string>
+    <string name="analytics">Analytics</string>
+    <string name="user_details">User Details</string>
+    <string name="order_details">Order Details</string>
+    <string name="create_admin">Create Admin User</string>
+    <string name="active_users">Active Users (24h)</string>
+    <string name="recent_activity">Recent Activity</string>
+    <string name="no_recent_activity">No recent activity</string>
+    
+    <!-- Admin Actions -->
+    <string name="block_user">Block User</string>
+    <string name="unblock_user">Unblock User</string>
+    <string name="change_role">Change Role</string>
+    <string name="view_audit_logs">View Audit Logs</string>
+    <string name="admin_actions">Admin Actions</string>
+    
+    <!-- Admin Dialogs -->
+    <string name="confirm_block_user">Are you sure you want to block this user?</string>
+    <string name="confirm_unblock_user">Are you sure you want to unblock this user?</string>
+    <string name="confirm_role_change">Are you sure you want to change this user\'s role?</string>
+    <string name="password_requirements">Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character</string>
+    
+    <!-- Admin Messages -->
+    <string name="admin_access_required">Admin access required</string>
+    <string name="admin_session_expired">Admin session has expired</string>
+    <string name="operation_failed">Operation Failed</string>
+    <string name="operation_success">Operation Successful</string>
+    <string name="rate_limit_exceeded">Too many operations. Please try again later.</string>
 
-    <!-- Product Details -->
-    <string name="added_to_cart">Added to cart</string>
-    <string name="add_to_cart">Add to Cart</string>
-    <string name="product_description">Description</string>
-    <string name="product_reviews">Reviews</string>
+    <!-- Form Fields -->
+    <string name="field_name">Name</string>
+    <string name="field_email">Email</string>
+    <string name="field_password">Password</string>
+    <string name="field_role">Role</string>
+    <string name="field_status">Status</string>
+    <string name="field_created">Created</string>
+    <string name="field_last_login">Last Login</string>
 
-    <!-- Categories -->
-    <string name="categories_empty">No categories found</string>
-    <string name="search_categories">Search categories</string>
+    <!-- Common -->
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="save">Save</string>
+    <string name="create">Create</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="back">Back</string>
+    <string name="details">Details</string>
 
-    <!-- Wish List -->
-    <string name="wish_list">Wish List</string>
-    <string name="wishlist_empty">Your Wish List is Empty</string>
-    <string name="wishlist_empty_message">Save items you want to buy later</string>
-    <string name="remove_from_wishlist">Remove from wish list</string>
-
-    <!-- Cart -->
-    <string name="cart">Cart</string>
+    <!-- Shopping -->
     <string name="cart_empty">Your Cart is Empty</string>
     <string name="cart_empty_message">Looks like you haven\'t added anything to your cart yet</string>
     <string name="browse_products">Browse Products</string>
     <string name="total">Total</string>
-    <string name="checkout">Checkout</string>
+    <string name="categories_empty">No Categories Available</string>
+    <string name="product_description">Product Description</string>
+    <string name="product_reviews">Customer Reviews</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="wishlist_empty">Your Wishlist is Empty</string>
+    <string name="remove_from_cart">Remove from Cart</string>
+    <string name="decrease_quantity">Decrease Quantity</string>
+    <string name="increase_quantity">Increase Quantity</string>
+    <string name="category_image">Category Image</string>
+    <string name="product_image">Product Image</string>
     <string name="clear_cart">Clear Cart</string>
-    <string name="clear_cart_title">Clear Cart?</string>
-    <string name="clear_cart_message">Are you sure you want to remove all items from your cart?</string>
-    <string name="clear">Clear</string>
-    <string name="cancel">Cancel</string>
-    <string name="remove_from_cart">Remove from cart</string>
-    <string name="decrease_quantity">Decrease quantity</string>
-    <string name="increase_quantity">Increase quantity</string>
-    <string name="checkout_success_title">Order Placed Successfully!</string>
-    <string name="checkout_success_message">Your order has been placed successfully and will be processed shortly.</string>
-    <string name="view_orders">View Orders</string>
+    <string name="added_to_cart">Added to Cart</string>
+    <string name="processing">Processing...</string>
     <string name="continue_shopping">Continue Shopping</string>
-
-    <!-- Profile -->
-    <string name="profile">Profile</string>
-    <string name="profile_image">Profile Image</string>
-    <string name="edit_profile">Edit Profile</string>
-    <string name="my_orders">My Orders</string>
-    <string name="settings">Settings</string>
-    <string name="logout">Logout</string>
+    <string name="checkout_success_title">Checkout Complete</string>
+    <string name="checkout_success_message">Your order has been placed successfully</string>
+    <string name="session_expired_title">Session Expired</string>
+    <string name="session_expired_message">Your session has expired. Please log in again.</string>
+    <string name="clear">Clear</string>
+    <string name="clear_cart_title">Clear Cart</string>
+    <string name="clear_cart_message">Are you sure you want to clear your cart?</string>
+    <string name="dismiss">Dismiss</string>
 </resources>

@@ -1,222 +1,148 @@
 package com.example.b_shop.ui.auth;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Base64;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-
-import com.example.b_shop.R;
 import com.example.b_shop.data.local.entities.User;
 import com.example.b_shop.data.repositories.UserRepository;
 import com.example.b_shop.utils.UserManager;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AuthViewModel extends AndroidViewModel {
-    
     private final UserRepository userRepository;
     private final UserManager userManager;
-    private final MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
-    private final MutableLiveData<RegistrationResult> registrationResult = new MutableLiveData<>();
-    private final SharedPreferences securePreferences;
-    private final Executor backgroundExecutor;
+    private final ExecutorService executorService;
+    private final MutableLiveData<AuthState> authState;
+    private final MutableLiveData<AuthState> registrationState;
 
-    private static final String SECURE_PREFS_FILE = "secure_credentials";
-    private static final String KEY_SAVED_EMAIL = "saved_email";
-    private static final String KEY_SAVED_PASSWORD = "saved_password";
-    private static final String ENCRYPTION_KEY = "BShop_SecureStorage_Key";
-
-    public AuthViewModel(@NonNull Application application,
-                       @NonNull UserRepository userRepository,
-                       @NonNull UserManager userManager) {
+    public AuthViewModel(@NonNull Application application, @NonNull UserRepository userRepository) {
         super(application);
         this.userRepository = userRepository;
-        this.userManager = userManager;
-        this.securePreferences = application.getSharedPreferences(SECURE_PREFS_FILE, Context.MODE_PRIVATE);
-        this.backgroundExecutor = Executors.newSingleThreadExecutor();
+        this.userManager = UserManager.getInstance(application);
+        this.executorService = Executors.newSingleThreadExecutor();
+        this.authState = new MutableLiveData<>(AuthState.initial());
+        this.registrationState = new MutableLiveData<>(AuthState.initial());
     }
 
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.encodeToString(hash, Base64.NO_WRAP);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to hash password", e);
+    public void login(String email, String password) {
+        if (!validateInput(email, password)) {
+            return;
         }
-    }
 
-    private String encryptData(String data) {
-        try {
-            byte[] input = data.getBytes(StandardCharsets.UTF_8);
-            byte[] keyBytes = ENCRYPTION_KEY.getBytes(StandardCharsets.UTF_8);
-            
-            // Simple XOR encryption with the key
-            byte[] encrypted = new byte[input.length];
-            for (int i = 0; i < input.length; i++) {
-                encrypted[i] = (byte) (input[i] ^ keyBytes[i % keyBytes.length]);
-            }
-            
-            return Base64.encodeToString(encrypted, Base64.NO_WRAP);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to encrypt data", e);
-        }
-    }
-
-    private String decryptData(String encryptedData) {
-        try {
-            byte[] encrypted = Base64.decode(encryptedData, Base64.NO_WRAP);
-            byte[] keyBytes = ENCRYPTION_KEY.getBytes(StandardCharsets.UTF_8);
-            
-            // Simple XOR decryption with the key
-            byte[] decrypted = new byte[encrypted.length];
-            for (int i = 0; i < encrypted.length; i++) {
-                decrypted[i] = (byte) (encrypted[i] ^ keyBytes[i % keyBytes.length]);
-            }
-            
-            return new String(decrypted, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to decrypt data", e);
-        }
-    }
-
-    public void login(String email, String password, boolean rememberMe) {
-        boolean isAutoLogin = !email.isEmpty() && !password.isEmpty() && rememberMe;
-        backgroundExecutor.execute(() -> {
+        authState.setValue(AuthState.loading());
+        executorService.execute(() -> {
             try {
-                String hashedPassword = hashPassword(password);
-                User user = userRepository.login(email, hashedPassword).get();
+                User user = userRepository.login(email, password).get();
                 if (user != null) {
-                    // Update session in UserManager
-                    userManager.loginUser(user.getUserId(), user.getEmail(), user.getName());
-                    
-                    if (rememberMe) {
-                        saveUserCredentials(email, password);
+                    // For admin users, perform additional validation
+                    if (user.isAdmin() && !validateAdminCredentials(email, password)) {
+                        authState.postValue(AuthState.error("Invalid admin credentials"));
+                        return;
                     }
-                    loginResult.postValue(new LoginResult(true, null, isAutoLogin));
+                    authState.postValue(AuthState.success(user.getRole()));
                 } else {
-                    loginResult.postValue(new LoginResult(false, "Invalid email or password", isAutoLogin));
+                    authState.postValue(AuthState.error("Invalid email or password"));
                 }
             } catch (Exception e) {
-                loginResult.postValue(new LoginResult(false, "Login attempt failed", isAutoLogin));
+                authState.postValue(AuthState.error(e.getMessage()));
             }
         });
     }
 
     public void register(String email, String name, String phone, String password) {
-        backgroundExecutor.execute(() -> {
+        if (!validateRegistrationInput(email, name, phone, password)) {
+            return;
+        }
+
+        authState.setValue(AuthState.loading());
+        executorService.execute(() -> {
             try {
-                String hashedPassword = hashPassword(password);
-                boolean success = userRepository.register(email, name, phone, hashedPassword).get();
+                boolean success = userRepository.register(email, name, phone, password).get();
                 if (success) {
-                    registrationResult.postValue(new RegistrationResult(true, null));
+                    // After registration, perform login
+                    login(email, password);
                 } else {
-                    registrationResult.postValue(new RegistrationResult(false, "Email already exists"));
+                    authState.postValue(AuthState.error("Registration failed. Email might be taken."));
                 }
             } catch (Exception e) {
-                registrationResult.postValue(new RegistrationResult(false, "Registration failed: " + e.getMessage()));
+                authState.postValue(AuthState.error(e.getMessage()));
             }
         });
     }
 
-    private void saveUserCredentials(String email, String password) {
-        String encryptedEmail = encryptData(email);
-        String encryptedPassword = encryptData(password);
-        
-        securePreferences.edit()
-                .putString(KEY_SAVED_EMAIL, encryptedEmail)
-                .putString(KEY_SAVED_PASSWORD, encryptedPassword)
-                .apply();
+    private boolean validateInput(String email, String password) {
+        if (email == null || email.trim().isEmpty()) {
+            authState.setValue(AuthState.error("Email is required"));
+            return false;
+        }
+
+        if (password == null || password.trim().isEmpty()) {
+            authState.setValue(AuthState.error("Password is required"));
+            return false;
+        }
+
+        return true;
     }
 
-    public String getSavedEmail() {
-        String encryptedEmail = securePreferences.getString(KEY_SAVED_EMAIL, "");
-        return !encryptedEmail.isEmpty() ? decryptData(encryptedEmail) : "";
+    private boolean validateRegistrationInput(String email, String name, String phone, String password) {
+        if (!validateInput(email, password)) {
+            return false;
+        }
+
+        if (name == null || name.trim().isEmpty()) {
+            authState.setValue(AuthState.error("Name is required"));
+            return false;
+        }
+
+        if (phone == null || phone.trim().isEmpty()) {
+            authState.setValue(AuthState.error("Phone number is required"));
+            return false;
+        }
+
+        // Password complexity check for registration
+        if (!isPasswordComplex(password)) {
+            authState.setValue(AuthState.error(
+                "Password must be at least 8 characters long and contain uppercase, " +
+                "lowercase, number, and special character"
+            ));
+            return false;
+        }
+
+        return true;
     }
 
-    public String getSavedPassword() {
-        String encryptedPassword = securePreferences.getString(KEY_SAVED_PASSWORD, "");
-        return !encryptedPassword.isEmpty() ? decryptData(encryptedPassword) : "";
+    private boolean validateAdminCredentials(String email, String password) {
+        // Additional validation for admin users
+        // In production, implement stronger validation and 2FA
+        return email.endsWith("@bshop.com") && isPasswordComplex(password);
     }
 
-    public void clearSavedCredentials() {
-        securePreferences.edit()
-                .remove(KEY_SAVED_EMAIL)
-                .remove(KEY_SAVED_PASSWORD)
-                .apply();
+    private boolean isPasswordComplex(String password) {
+        return password.length() >= 8 &&
+               password.matches(".*[A-Z].*") &&   // At least one uppercase
+               password.matches(".*[a-z].*") &&   // At least one lowercase
+               password.matches(".*\\d.*") &&     // At least one digit
+               password.matches(".*[!@#$%^&*].*"); // At least one special character
     }
 
-    public LiveData<LoginResult> getLoginResult() {
-        return loginResult;
+    public void clearError() {
+        authState.setValue(AuthState.initial());
     }
 
-    public LiveData<RegistrationResult> getRegistrationResult() {
-        return registrationResult;
+    public LiveData<AuthState> getAuthState() {
+        return authState;
     }
 
-    public void logout() {
-        userManager.logoutUser();
-        userRepository.logout();
+    public LiveData<AuthState> getRegistrationResult() {
+        return registrationState;
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
-        userRepository.cleanup();
-    }
-
-    public static class LoginResult {
-        private final boolean success;
-        private final String error;
-        private final boolean isAutoLogin;
-
-        public LoginResult(boolean success, String error) {
-            this(success, error, false);
-        }
-
-        public LoginResult(boolean success, String error, boolean isAutoLogin) {
-            this.success = success;
-            this.error = error;
-            this.isAutoLogin = isAutoLogin;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public boolean isAutoLogin() {
-            return isAutoLogin;
-        }
-    }
-
-    public static class RegistrationResult {
-        private final boolean success;
-        private final String error;
-
-        public RegistrationResult(boolean success, String error) {
-            this.success = success;
-            this.error = error;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public String getError() {
-            return error;
-        }
+        executorService.shutdown();
     }
 }

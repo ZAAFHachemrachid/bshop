@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Sales Analytics -->
+    <group android:id="@+id/group_sales">
+        <item
+            android:id="@+id/action_sales_overview"
+            android:icon="@android:drawable/ic_menu_report_image"
+            android:title="Sales Overview"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_revenue_analysis"
+            android:icon="@android:drawable/ic_menu_sort_by_size"
+            android:title="Revenue Analysis"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_product_performance"
+            android:icon="@android:drawable/ic_menu_slideshow"
+            android:title="Product Performance"
+            app:showAsAction="never" />
+    </group>
+
+    <!-- User Analytics -->
+    <group android:id="@+id/group_user_analytics">
+        <item
+            android:id="@+id/action_user_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="User Activity"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_customer_insights"
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="Customer Insights"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_retention_metrics"
+            android:icon="@android:drawable/ic_menu_rotate"
+            android:title="Retention Metrics"
+            app:showAsAction="never" />
+    </group>
+
+    <!-- Time Period Selection -->
+    <item
+        android:id="@+id/action_time_period"
+        android:icon="@android:drawable/ic_menu_today"
+        android:title="Time Period"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/period_today"
+                android:title="Today" />
+            <item
+                android:id="@+id/period_week"
+                android:title="This Week" />
+            <item
+                android:id="@+id/period_month"
+                android:title="This Month" />
+            <item
+                android:id="@+id/period_quarter"
+                android:title="This Quarter" />
+            <item
+                android:id="@+id/period_year"
+                android:title="This Year" />
+            <item
+                android:id="@+id/period_custom"
+                android:title="Custom Range" />
+        </menu>
+    </item>
+
+    <!-- Export Options -->
+    <item
+        android:id="@+id/action_export"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="Export"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/export_pdf"
+                android:title="Export as PDF" />
+            <item
+                android:id="@+id/export_csv"
+                android:title="Export as CSV" />
+            <item
+                android:id="@+id/export_excel"
+                android:title="Export as Excel" />
+        </menu>
+    </item>
+
+    <!-- Refresh Analytics -->
+    <item
+        android:id="@+id/action_refresh"
+        android:icon="@android:drawable/ic_menu_rotate"
+        android:title="Refresh Data"
+        app:showAsAction="ifRoom" />
+
+</menu>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="CircleImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Admin Dashboard styles -->
+    <style name="AdminActionButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="iconGravity">start</item>
+        <item name="iconPadding">16dp</item>
+    </style>
+
+    <style name="AdminSectionTitle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AdminCardView" parent="Widget.MaterialComponents.CardView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">8dp</item>
+    </style>
+
+    <style name="AdminStatValue" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+
+    <style name="AdminStatLabel" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+
+    <style name="AdminAuditLogCard" parent="Widget.MaterialComponents.CardView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">4dp</item>
+    </style>
+
+    <style name="AdminDialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">8dp</item>
+    </style>
+
+    <style name="AdminErrorText" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">?attr/colorError</item>
+    </style>
+
+    <!-- Overlay styles for AppBar and Popup -->
+    <style name="Theme.BShop.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
+
+    <style name="Theme.BShop.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light"/>
+</resources>

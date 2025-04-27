@@ -7,70 +7,83 @@
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.b_shop.ui.auth.LoginFragment"
-        android:label="Login">
+        android:label="@string/login">
         <action
             android:id="@+id/action_login_to_register"
             app:destination="@id/registerFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim"
-            app:popUpTo="@id/loginFragment"
-            app:popUpToSaveState="true" />
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
-            android:id="@+id/action_login_to_main"
-            app:destination="@id/mainActivity"
-            app:popUpTo="@id/nav_graph_auth"
-            app:popUpToInclusive="true"
+            android:id="@+id/action_login_to_forgot_password"
+            app:destination="@id/forgotPasswordFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim" />
-        <deepLink
-            android:id="@+id/deeplink_login"
-            app:uri="bshop://auth/login" />
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <argument
-            android:name="email"
-            app:argType="string"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            android:name="admin_required"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
 
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.b_shop.ui.auth.RegisterFragment"
-        android:label="Register">
+        android:label="@string/register">
         <action
             android:id="@+id/action_register_to_login"
             app:destination="@id/loginFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim"
-            app:popUpTo="@id/registerFragment"
-            app:popUpToSaveState="true" />
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_register_to_main"
-            app:destination="@id/mainActivity"
+            app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph_auth"
-            app:popUpToInclusive="true"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim" />
-        <deepLink
-            android:id="@+id/deeplink_register"
-            app:uri="bshop://auth/register" />
-        <argument
-            android:name="referralCode"
-            app:argType="string"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            app:popUpToInclusive="true" />
     </fragment>
 
-    <activity
-        android:id="@+id/mainActivity"
-        android:name="com.example.b_shop.ui.MainActivity"
-        android:label="MainActivity">
-        <deepLink
-            android:id="@+id/deeplink_main"
-            app:uri="bshop://main" />
-    </activity>
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.example.b_shop.ui.auth.ForgotPasswordFragment"
+        android:label="@string/forgot_password">
+        <action
+            android:id="@+id/action_forgot_password_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+        <argument
+            android:name="email"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <!-- Global action to show admin required dialog -->
+    <dialog
+        android:id="@+id/adminRequiredDialog"
+        android:name="com.example.b_shop.ui.auth.AdminRequiredDialog">
+        <argument
+            android:name="message"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_adminRequired_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true">
+            <argument
+                android:name="admin_required"
+                android:defaultValue="true" />
+        </action>
+    </dialog>
+
+    <!-- Global Actions -->
+    <action
+        android:id="@+id/action_global_adminRequired"
+        app:destination="@id/adminRequiredDialog">
+        <argument
+            android:name="message"
+            app:argType="string" />
+    </action>
 
 </navigation>

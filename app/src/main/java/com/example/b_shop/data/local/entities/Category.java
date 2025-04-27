@@ -1,6 +1,7 @@
 package com.example.b_shop.data.local.entities;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "categories")
@@ -10,6 +11,13 @@ public class Category {
     private String name;
     private String description;
     private String imagePath;
+
+    @Ignore
+    public Category(String name, String description) {
+        this.name = name;
+        this.description = description;
+        this.imagePath = null;
+    }
 
     public Category(String name, String description, String imagePath) {
         this.name = name;

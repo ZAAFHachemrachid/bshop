@@ -9,6 +9,7 @@ room = "2.6.1"
 lifecycle = "2.7.0"
 core = "1.12.0"
 navigationRuntime = "2.8.9"
+navigationSafeArgs = "2.8.9"
 securityCrypto = "1.0.0"
 
 [libraries]
@@ -32,3 +33,4 @@ security-crypto = { group = "androidx.security", name = "security-crypto", versi
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+navigation-safeargs = { id = "androidx.navigation.safeargs", version.ref = "navigationSafeArgs" }

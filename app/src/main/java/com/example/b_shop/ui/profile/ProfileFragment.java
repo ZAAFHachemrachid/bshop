@@ -4,105 +4,121 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ProgressBar;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
-
-import com.example.b_shop.BShopApplication;
 import com.example.b_shop.R;
-import com.example.b_shop.data.repositories.UserRepository;
+import com.example.b_shop.databinding.FragmentProfileBinding;
 import com.example.b_shop.utils.UserManager;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 
 public class ProfileFragment extends Fragment {
-
+    private FragmentProfileBinding binding;
     private ProfileViewModel viewModel;
-    private TextView tvUserName;
-    private TextView tvUserEmail;
-    private ProgressBar progressBar;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                         Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        UserManager userManager = UserManager.getInstance(requireContext());
+        ProfileViewModelFactory factory = ProfileViewModelFactory.getInstance(
+            requireActivity().getApplication(),
+            userManager
+        );
+        viewModel = new ViewModelProvider(this, factory).get(ProfileViewModel.class);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                           @Nullable ViewGroup container,
+                           @Nullable Bundle savedInstanceState) {
+        binding = FragmentProfileBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
-        // Initialize views and check for null
-        tvUserName = view.findViewById(R.id.tv_user_name);
-        tvUserEmail = view.findViewById(R.id.tv_user_email);
-        progressBar = view.findViewById(R.id.progress_bar);
-
-        if (tvUserName == null || tvUserEmail == null || progressBar == null) {
-            Toast.makeText(requireContext(), "Error initializing views", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        setupViewModel();
-        setupClickListeners(view);
+        setupUI();
         observeViewModel();
     }
 
-    private void setupViewModel() {
-        BShopApplication application = (BShopApplication) requireActivity().getApplication();
-        ProfileViewModelFactory factory = new ProfileViewModelFactory(application);
-        viewModel = new ViewModelProvider(this, factory).get(ProfileViewModel.class);
-    }
+    private void setupUI() {
+        if (!viewModel.isLoggedIn()) {
+            navigateToAuth();
+            return;
+        }
 
-    private void setupClickListeners(View view) {
-        view.findViewById(R.id.btn_edit_profile).setOnClickListener(v -> {
-            // Navigate to edit profile (to be implemented)
-            Toast.makeText(requireContext(), "Edit Profile coming soon", Toast.LENGTH_SHORT).show();
-        });
+        binding.tvUserName.setText(viewModel.getCurrentUserName());
+        binding.tvUserEmail.setText(viewModel.getCurrentUserEmail());
 
-        view.findViewById(R.id.btn_my_orders).setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.action_profile_to_orders);
-        });
+        binding.btnLogout.setOnClickListener(v -> showLogoutConfirmation());
+        binding.btnOrders.setOnClickListener(v -> 
+            Navigation.findNavController(v).navigate(R.id.action_profile_to_orders));
 
-        view.findViewById(R.id.btn_settings).setOnClickListener(v -> {
-            // Navigate to settings (to be implemented)
-            Toast.makeText(requireContext(), "Settings coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        view.findViewById(R.id.btn_logout).setOnClickListener(v -> {
-            viewModel.logout();
-            Navigation.findNavController(v).navigate(R.id.action_profile_to_auth);
-        });
+        // Admin dashboard button is initially hidden
+        binding.btnAdminDashboard.setVisibility(View.GONE);
     }
 
     private void observeViewModel() {
-        viewModel.getUserProfile().observe(getViewLifecycleOwner(), user -> {
-            if (user != null && tvUserName != null && tvUserEmail != null) {
-                String name = user.getName();
-                String email = user.getEmail();
-                if (name != null) {
-                    tvUserName.setText(name);
-                }
-                if (email != null) {
-                    tvUserEmail.setText(email);
-                }
-            }
-        });
-
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (progressBar != null) {
-                progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        viewModel.getIsAdminUser().observe(getViewLifecycleOwner(), isAdmin -> {
+            binding.btnAdminDashboard.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+            if (isAdmin) {
+                setupAdminDashboardAccess();
             }
         });
 
         viewModel.getError().observe(getViewLifecycleOwner(), error -> {
-            if (error != null && isAdded()) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
-                viewModel.clearError();
+            if (error != null) {
+                showError(error);
             }
         });
+    }
+
+    private void setupAdminDashboardAccess() {
+        binding.btnAdminDashboard.setOnClickListener(v -> {
+            if (viewModel.canAccessAdminDashboard()) {
+                if (viewModel.validateAdminSession()) {
+                    Navigation.findNavController(v)
+                        .navigate(R.id.action_profile_to_adminDashboard);
+                } else {
+                    showError(getString(R.string.admin_session_expired));
+                    navigateToAuth();
+                }
+            } else {
+                showError(getString(R.string.admin_access_required));
+            }
+        });
+    }
+
+    private void showLogoutConfirmation() {
+        new MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to logout?")
+            .setPositiveButton("Logout", (dialog, which) -> {
+                viewModel.logout();
+                navigateToAuth();
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+
+    private void navigateToAuth() {
+        Navigation.findNavController(requireView())
+            .navigate(R.id.action_profile_to_auth);
+    }
+
+    private void showError(String message) {
+        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

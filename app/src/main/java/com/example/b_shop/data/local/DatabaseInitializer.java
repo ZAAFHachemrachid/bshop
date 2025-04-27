@@ -1,104 +1,155 @@
 package com.example.b_shop.data.local;
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.util.Log;
+import com.example.b_shop.R;
 import com.example.b_shop.data.local.entities.Category;
 import com.example.b_shop.data.local.entities.Product;
 import com.example.b_shop.data.local.entities.User;
-import java.util.HashMap;
-import java.util.Map;
+import com.example.b_shop.data.local.entities.UserRole;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DatabaseInitializer {
-    // Default user credentials
-    private static final int DEFAULT_USER_ID = 1;
-    private static final String DEFAULT_USER_EMAIL = "test@example.com";
-    private static final String DEFAULT_USER_NAME = "Test User";
-    private static final String DEFAULT_USER_PASSWORD = "password123"; // For development only
+    private static final String TAG = "DatabaseInitializer";
+    private final AppDatabase database;
+    private final Context context;
+    private final ExecutorService executorService;
 
-    private static final Map<String, String> CATEGORIES = new HashMap<String, String>() {{
-        put("Face Products", "Essential cosmetics for creating a flawless base");
-        put("Eye Products", "Everything you need for stunning eye makeup");
-        put("Lip Products", "Products for beautiful and lasting lip color");
-        put("Skin Care", "Maintain healthy and glowing skin");
-        put("Tools & Accessories", "Professional makeup application tools");
-    }};
+    public DatabaseInitializer(Context context, AppDatabase database) {
+        this.context = context;
+        this.database = database;
+        this.executorService = Executors.newSingleThreadExecutor();
+    }
 
-    private static final Map<String, Product[]> PRODUCTS = new HashMap<String, Product[]>() {{
-        put("Face Products", new Product[]{
-            new Product("Foundation", "Long-lasting liquid foundation", 29.99f, 1, null, 50),
-            new Product("Concealer", "Full coverage concealer", 19.99f, 1, null, 50),
-            new Product("Face Primer", "Smoothing face primer", 24.99f, 1, null, 40),
-            new Product("Setting Powder", "Translucent setting powder", 22.99f, 1, null, 45),
-            new Product("Blush", "Natural flush powder blush", 18.99f, 1, null, 35)
-        });
-        put("Eye Products", new Product[]{
-            new Product("Eyeshadow Palette", "12-color neutral palette", 39.99f, 2, null, 30),
-            new Product("Liquid Eyeliner", "Waterproof black eyeliner", 15.99f, 2, null, 60),
-            new Product("Mascara", "Volumizing mascara", 21.99f, 2, null, 55),
-            new Product("Eyebrow Pencil", "Precision brow pencil", 14.99f, 2, null, 45),
-            new Product("False Eyelashes", "Natural-look lashes", 12.99f, 2, null, 40)
-        });
-        put("Lip Products", new Product[]{
-            new Product("Matte Lipstick", "Long-wearing matte lipstick", 19.99f, 3, null, 40),
-            new Product("Lip Gloss", "High-shine lip gloss", 16.99f, 3, null, 45),
-            new Product("Lip Liner", "Creamy lip liner", 12.99f, 3, null, 50),
-            new Product("Lip Balm", "Moisturizing lip balm", 8.99f, 3, null, 60),
-            new Product("Lip Plumper", "Volumizing lip plumper", 22.99f, 3, null, 35)
-        });
-        put("Skin Care", new Product[]{
-            new Product("Moisturizer", "Hydrating face moisturizer", 27.99f, 4, null, 40),
-            new Product("Face Serum", "Anti-aging serum", 34.99f, 4, null, 35),
-            new Product("Face Mask", "Purifying clay mask", 23.99f, 4, null, 45),
-            new Product("Cleanser", "Gentle face cleanser", 19.99f, 4, null, 50),
-            new Product("Sunscreen", "SPF 50 face sunscreen", 25.99f, 4, null, 40)
-        });
-        put("Tools & Accessories", new Product[]{
-            new Product("Makeup Brush Set", "10-piece brush set", 49.99f, 5, null, 30),
-            new Product("Beauty Sponge", "Latex-free makeup sponge", 9.99f, 5, null, 60),
-            new Product("Eyelash Curler", "Professional eyelash curler", 15.99f, 5, null, 40),
-            new Product("Brush Cleaner", "Makeup brush cleaning solution", 12.99f, 5, null, 45),
-            new Product("Makeup Bag", "Travel makeup organizer", 24.99f, 5, null, 35)
-        });
-    }};
-
-    public static void populateAsync(Context context) {
-        AsyncTask.execute(() -> {
-            populate(context);
+    public void initialize() {
+        executorService.execute(() -> {
+            try {
+                initializeCategories();
+                initializeProducts();
+            } catch (Exception e) {
+                Log.e(TAG, "Error initializing database", e);
+            }
         });
     }
 
-    private static void populate(Context context) {
-        AppDatabase db = AppDatabase.getInstance(context);
+    public void initializeAdminUser(String email, String hashedPassword) {
+        executorService.execute(() -> {
+            try {
+                // Check if admin user already exists
+                if (database.userDao().getCountByRole(UserRole.ADMIN) == 0) {
+                    User adminUser = new User();
+                    adminUser.setName("Admin");
+                    adminUser.setEmail(email);
+                    adminUser.setPassword(hashedPassword);
+                    adminUser.setRole(UserRole.ADMIN);
+                    adminUser.setActive(true);
 
-        try {
-            // Create default user if it doesn't exist
-            if (db.userDao().getUserByIdSync(DEFAULT_USER_ID) == null) {
-                User defaultUser = new User(DEFAULT_USER_ID, DEFAULT_USER_NAME, DEFAULT_USER_EMAIL, DEFAULT_USER_PASSWORD);
-                db.userDao().insert(defaultUser);
-            }
-
-            // Check if products are already populated
-            if (db.categoryDao().getCategoryCount() > 0) {
-                return;
-            }
-
-            // Add categories
-            for (Map.Entry<String, String> entry : CATEGORIES.entrySet()) {
-                Category category = new Category(entry.getKey(), entry.getValue(), null);
-                int categoryId = (int) db.categoryDao().insert(category);
-
-                // Add products for this category
-                Product[] products = PRODUCTS.get(entry.getKey());
-                if (products != null) {
-                    for (Product product : products) {
-                        product.setCategoryId(categoryId);
-                        db.productDao().insert(product);
-                    }
+                    database.userDao().insert(adminUser);
+                    Log.i(TAG, "Admin user created successfully");
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Error creating admin user", e);
             }
+        });
+    }
+
+    private void initializeCategories() {
+        if (database.categoryDao().getCategoryCount() > 0) {
+            return;
+        }
+
+        List<Category> categories = new ArrayList<>();
+        // Add default categories
+        categories.add(new Category("Electronics", "Electronics and gadgets"));
+        categories.add(new Category("Fashion", "Clothing and accessories"));
+        categories.add(new Category("Home", "Home and furniture"));
+        categories.add(new Category("Books", "Books and media"));
+
+        database.categoryDao().insertAll(categories);
+    }
+
+    private void initializeProducts() {
+        if (database.productDao().getProductCount() > 0) {
+            return;
+        }
+
+        List<Product> products = new ArrayList<>();
+        // Add sample products for each category
+        // Electronics
+        products.add(new Product(
+            "Smartphone",
+            "High-end smartphone with great features",
+            599.99f,
+            1,  // Electronics category
+            null,  // imagePath can be null
+            10    // stock
+        ));
+
+        // Fashion
+        products.add(new Product(
+            "T-Shirt",
+            "Cotton t-shirt with modern design",
+            29.99f,
+            2,  // Fashion category
+            null,  // imagePath can be null
+            20    // stock
+        ));
+
+        database.productDao().insertAll(products);
+    }
+
+    public void cleanup() {
+        executorService.shutdown();
+    }
+
+    /**
+     * Helper method to hash passwords consistently with the rest of the application
+     */
+    public static String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "Error hashing password", e);
+            throw new RuntimeException("Failed to hash password", e);
+        }
+    }
+
+    /**
+     * Verify if database is properly initialized
+     */
+    public boolean verifyInitialization() {
+        try {
+            boolean hasCategories = database.categoryDao().getCategoryCount() > 0;
+            boolean hasProducts = database.productDao().getProductCount() > 0;
+            boolean hasAdmin = database.userDao().getCountByRole(UserRole.ADMIN) > 0;
+
+            if (!hasCategories || !hasProducts || !hasAdmin) {
+                Log.w(TAG, String.format(
+                    "Database initialization incomplete - Categories: %b, Products: %b, Admin: %b",
+                    hasCategories, hasProducts, hasAdmin));
+                return false;
+            }
+
+            return true;
         } catch (Exception e) {
-            e.printStackTrace();
-            // Log error but don't crash the app
+            Log.e(TAG, "Error verifying database initialization", e);
+            return false;
         }
     }
 }
